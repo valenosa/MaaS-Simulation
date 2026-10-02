@@ -1,9 +1,15 @@
 # src/
 
-Código del simulador. **Vacío a propósito**: no se escribe código hasta que el SDD ([`docs/sdd.md`](../docs/sdd.md)) esté aprobado.
+Código del simulador: el paquete `simulador_maas`. **Vacío a propósito**: no se escribe código hasta que el equipo apruebe el SDD ([`docs/sdd.md`](../docs/sdd.md)).
 
-Estructura prevista (se confirma en el SDD):
+Antes de programar, leé las reglas del SDD, sección 0.2. Entre otras cosas, lo de la segunda iteración no se implementa todavía.
 
-- **Motor de simulación:** procesa los eventos TLL, TLC y TPS y guarda métricas crudas por corrida. No conoce el criterio de decisión.
-- **FDPs:** generadores intercambiables (mock en la V1, ajustadas del TP4 en la V2), sin tocar el motor.
-- **Análisis:** lee las métricas crudas, aplica el criterio de decisión (umbrales configurables) y arma tablas y gráficos.
+| Qué | Dónde (en el SDD) |
+|---|---|
+| Archivos del paquete y qué hace cada uno | Sección 2.2 |
+| Qué módulo puede usar a cuál | Sección 2.3 |
+| Cómo se instala el paquete | Sección 2.1 y decisión T-23 |
+| Orden de construcción por etapas, y qué pruebas cierran cada una | Sección 13 |
+| Subcomandos `experimento`, `corrida` y `analisis` | Sección 8.6 |
+
+La idea general: el motor simula un día y devuelve métricas crudas, sin conocer el criterio de decisión. El análisis lee los archivos de salida y aplica el criterio, así que cambiar los umbrales no requiere volver a simular. Las FDP se cambian en `config/`, sin tocar el código.

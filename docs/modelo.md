@@ -2,12 +2,12 @@
 
 **Lyft · zona de Boston · simulación evento a evento**
 
-- **Versión:** 2.1
+- **Versión:** 2.3
 - **Fecha:** 2 de octubre de 2026
-- **Estado:** en revisión del equipo
+- **Estado:** aprobado para la primera iteración
 - **Materia:** Simulación · UTN FRBA · Trabajo Práctico Nº 5
 - **Autores:** _completar integrantes del grupo_
-- **Reemplaza a:** v2.0 (los cambios están en la sección 13)
+- **Reemplaza a:** v2.2 (los cambios están en la sección 13)
 
 ---
 
@@ -667,6 +667,8 @@ Con el estado final se calculan las métricas de la sección 6.
 - Hay un generador independiente para cada variable aleatoria: IA, TB, D, DEM y TAR (en la segunda iteración, el de TAR sortea el residuo de la regresión).
 - Cada réplica r tiene su semilla, y se usa **la misma** para todos los NCH y los tres niveles de demanda. Así, en la réplica r el cliente número k tiene siempre los mismos atributos, y las diferencias entre configuraciones se deben solo a la flota o a la demanda (D-09).
 - Toda corrida es reproducible: con el mismo código y la misma semilla se obtienen exactamente los mismos resultados.
+- **Semilla base: 20261002**, la fecha en que se fijó. Las semillas de todas las réplicas y variables se derivan de ella (SDD, sección 5.2). Se fija antes de correr el experimento de la entrega y **no se cambia después de ver los resultados**: elegir la semilla que da la conclusión preferida invalidaría el análisis (D-09).
+- **Por qué importa:** con las FDP provisorias y la demanda base, una verificación preliminar con cinco semillas dio para la flota 9 un abandono medio de entre 4,5 % y 5,6 %, alrededor del umbral Y = 5 %. Según la semilla, la mejor flota dio 9 o 10. Es el caso "en el límite" de la sección 10.1, y se informa así, junto con la flota siguiente; no es un error del simulador.
 
 ### 9.3 Niveles de demanda
 
@@ -875,6 +877,7 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
   - Cada réplica tiene su semilla, la misma para todas las flotas y los tres niveles de demanda.
   - Todos los atributos del cliente se sortean al llegar, aunque después se arrepienta. Incluye TB: como en este modelo no depende del chofer (S-05), puede tratarse como atributo del cliente.
   - IA = (media del nivel de demanda) × E, con E exponencial de media 1. Así, en los tres niveles el cliente número k tiene los mismos atributos: solo llega antes o después.
+  - Todas las semillas se derivan de una semilla base, que es un parámetro del experimento (sección 9.2). Se fija antes de correr el experimento de la entrega y no se cambia después de ver los resultados.
 - **Consecuencias:** dentro de una réplica, las diferencias entre configuraciones se deben solo a la flota o a la demanda. Todo es reproducible. Sirve de control: REC + RECP es igual para todas las flotas de una misma réplica y nivel de demanda.
 
 ### D-10 · Motor de simulación y análisis separados
@@ -967,7 +970,7 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 | P-09 | Informar a la cátedra los cambios respecto del análisis previo (sección 13). | — | **Sí:** se cubre en el documento de la entrega |
 | P-10 | Opcional: analizar la sensibilidad de los resultados al umbral U (por ejemplo, con 10 y 20 minutos). | D-02 | No: segunda iteración |
 | P-11 | Dibujar el diagrama de flujo de la simulación, a partir de la sección 8 y del SDD. El formato de la cátedra no lo exige, pero el grupo lo incluye en la entrega. | Documento de la entrega | **Sí** |
-| P-12 | Redactar el SDD. **En curso:** SDD v0.1. | Implementación | **Sí** |
+| P-12 | Redactar el SDD. **Hecho: SDD v1.1, aprobado para implementar la primera iteración.** | Implementación | **Sí** |
 | P-13 | Dejar el notebook de FDPs reproducible. Cómo: sección 4.5.4. | Todas las FDP | No: segunda iteración. En la primera alcanza con que corran las celdas de la distancia y la tarifa |
 | P-14 | Hacer que la tarifa dependa de la distancia (regresión). Cómo: sección 4.5.6; en el simulador, sección 5.10 del SDD. | TAR, REC | No: segunda iteración |
 
@@ -1008,6 +1011,8 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 | 1.0 | — | Análisis previo presentado a la cátedra | — |
 | 2.0 | 2026-10-01 | Reescritura completa (detalle en la sección 13.2) | Revisión del modelo como contrato para programar |
 | 2.1 | 2026-10-02 | Entrega en dos iteraciones (D-16; lista en la sección 12.3). Plan de trabajo para las FDP (sección 4.5). Tarifa: FDP propia en la primera iteración y regresión sobre la distancia en la segunda (D-14 ampliada; D-15, S-13 y S-14 nuevos). Búsqueda gamma y demora exponencial (P-05 y P-06 resueltos). Fichas de la sección 4.2, reglas de la 4.3 y valores de la 4.4 actualizados. Aclaraciones de la primera llegada y del cierre del horizonte (sección 8.4). Pendientes con la columna "¿Para la entrega?"; P-08 resuelto; P-13 y P-14 nuevos | Plazo de entrega y definición de las FDP antes del SDD |
+| 2.2 | 2026-10-02 | Estado de P-12: el SDD está completo (v1.0) y en revisión | Avance del SDD |
+| 2.3 | 2026-10-02 | Semilla base fijada en 20261002, con la regla de no cambiarla después de ver resultados (sección 9.2 y D-09). Aviso de que, con las FDP provisorias, la flota 9 queda en el límite del umbral de abandono. Estado de P-12: SDD v1.1, aprobado. Estado del modelo: aprobado para la primera iteración | Revisión del SDD por lectores sin contexto: la semilla no tenía valor y la conclusión depende de ella |
 
 ### 13.2 De la v1.0 a la v2.0
 
