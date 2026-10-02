@@ -2,7 +2,7 @@
 
 **Simulador MaaS · cantidad óptima de choferes · Lyft, zona de Boston**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Basado en:** modelo v2.3 ([`modelo.md`](modelo.md))
 - **Fecha:** 2 de octubre de 2026
 - **Estado:** aprobado para implementar la primera iteración.
@@ -255,11 +255,11 @@ nivel_confianza = …
 
 | Clave | Tipo | Unidad | Origen del valor | Validación de rango (§3.3) |
 |---|---|---|---|---|
-| `modelo.velocidad_mph` | real | mi/h | S-06, modelo §4.2 | > 0 |
-| `modelo.umbral_tolerancia_min` | real | min | D-02 | > 0; se admite infinito |
-| `modelo.horizonte_min` | real | min | D-05 | > 0 |
-| `demanda.media_ia_base_min` | real | min | D-01 | > 0 |
-| `demanda.niveles` | tabla de nombre a real | — | modelo §9.3 | Al menos un nivel; todos > 0; existe `base` y vale 1 |
+| `modelo.velocidad_mph` | real | mi/h | S-06, modelo §4.2 | > 0 y finito |
+| `modelo.umbral_tolerancia_min` | real | min | D-02 | > 0; se admite infinito (es el único real que lo admite) |
+| `modelo.horizonte_min` | real | min | D-05 | > 0 y finito |
+| `demanda.media_ia_base_min` | real | min | D-01 | > 0 y finito |
+| `demanda.niveles` | tabla de nombre a real | — | modelo §9.3 | Al menos un nivel; todos > 0 y finitos; existe `base` y vale 1 |
 | `experimento.replicas` | entero | — | D-05 | ≥ 2: el intervalo de confianza necesita al menos dos |
 | `experimento.semilla_base` | entero | — | modelo §9.2, D-09 | ≥ 0 |
 | `experimento.catalogo_fdp` | texto | — | §5 | — (el archivo se controla en la primera iteración: §3.3) |
@@ -267,9 +267,11 @@ nivel_confianza = …
 | `experimento.rango_margen_superior` | entero | choferes | modelo §9.5 | ≥ 0 |
 | `experimento.rango_manual` | lista de 0 o 2 enteros | choferes | modelo §10.5 | Si tiene dos: 1 ≤ desde ≤ hasta |
 | `experimento.verificar_invariantes` | booleano | — | T-13 | — |
-| `analisis.espera_total_max_min` | real | min | D-03 | > 0 |
+| `analisis.espera_total_max_min` | real | min | D-03 | > 0 y finito |
 | `analisis.abandono_max_pct` | real | % | D-03 | Entre 0 y 100 |
 | `analisis.nivel_confianza` | real | — | modelo §6.3 | Mayor que 0 y menor que 1 |
+
+**Infinito.** TOML admite `inf`, que cumple "> 0". Solo U lo admite, para correr sin arrepentimiento en las pruebas; en cualquier otro real, `inf` es un error. Sin este control, un `horizonte_min = inf` dejaría el motor en un ciclo sin fin, porque TLL nunca pasa a HV, y un factor de nivel infinito haría que todos los pedidos llegaran en el mismo instante. `nan` no hace falta controlarlo aparte: no cumple ninguna validación de rango, porque toda comparación con `nan` da falso.
 
 ### 3.3 Reglas de validación
 
@@ -682,7 +684,7 @@ simular_corrida(NCH, nivel, parametros, fuentes, registrar_eventos = falso) → 
 
 - **Entradas:** los parámetros de §4.6, las fuentes de la réplica (§5.1) y si hay que registrar los eventos (T-18).
 - **Salida:** el resultado de §4.7 y el registro de eventos con las filas de §9.3, que queda vacío si `registrar_eventos` es falso.
-- **Precondiciones:** NCH es un entero ≥ 1; TF > 0; U > 0 (puede ser infinito); E[S] > 0. Las garantizan la validación de la configuración (§3.3), la del catálogo (§5.9), la de la línea de comandos (§8.6) y §3.4, así que el motor no las vuelve a controlar. Un valor negativo de una FDP se detecta recién al sortearlo (§5.4, T-10).
+- **Precondiciones:** NCH es un entero ≥ 1; TF > 0 y finito; U > 0 (puede ser infinito); E[S] > 0 y finito. Las garantizan la validación de la configuración (§3.3), la del catálogo (§5.9), la de la línea de comandos (§8.6) y §3.4, así que el motor no las vuelve a controlar. Un valor negativo de una FDP se detecta recién al sortearlo (§5.4, T-10).
 
 El motor no sabe nada del criterio de decisión ni de otras corridas (D-10).
 
@@ -1206,7 +1208,7 @@ Además se muestran por pantalla la tabla de escenarios y la mejor flota de cada
 
 | Situación | Comportamiento | Dónde |
 |---|---|---|
-| Configuración o catálogo inválidos, incluido un valor fuera de rango (por ejemplo, `horizonte_min = 0`) | Error antes de simular; no se escribe nada | §3.3, §5.9 |
+| Configuración o catálogo inválidos, incluido un valor fuera de rango (por ejemplo, `horizonte_min = 0`, o `inf` en un real que no sea U) | Error antes de simular; no se escribe nada | §3.2, §3.3, §5.9 |
 | Opción inválida en la línea de comandos (por ejemplo, `--nch 0` o un nivel que no existe) | Error antes de hacer nada | §8.6 |
 | Catálogo con la tarifa en modo "regresion" | Error al cargarlo: es de la segunda iteración | §5.9 |
 | Familia de scipy que no es una distribución continua, o con media no finita | Error al cargar el catálogo, con la variable | §5.9 |
@@ -1258,7 +1260,7 @@ Además se muestran por pantalla la tabla de escenarios y la mejor flota de cada
 | PR-07 | Caso borde: TEE igual a U | D-02 | §12.4 |
 | PR-08 | Valores derivados | D-07; secciones 4.4 y 9.3 a 9.5 del modelo | Con el catálogo V1 y `config/experimento.toml`: E[S] = 20,0163854565 y cargas de 5,6045879278, 8,0065541826 y 10,408520437, todos con tolerancia relativa de 10⁻⁹; flota actual 9; peor 8; rango de 4 a 17 |
 | PR-09 | Análisis | D-03, D-06, D-10, T-22 | §12.5 |
-| PR-10 | Validaciones | D-14, D-16, T-10 | (a) Un catálogo con `modo = "regresion"` da error al cargarlo, y el mensaje dice que es de la segunda iteración. (b) Da error al cargarlo un catálogo con una familia que no existe en scipy, con una que existe pero no es una distribución (`describe`) o con `gamma` y `a = -1` (media no finita). (c) Con los datos de PR-06, pero con búsqueda `constante` −1: E[S] = 2 pasa los controles, y la corrida da error al procesar el primer pedido (T = 1), con la variable TB en el mensaje. (d) Una configuración sin el nivel `base` da error. (e) Una configuración con `horizonte_min = 0` da error, con la clave en el mensaje, y también una con `rango_manual = [0, 2]` o con `rango_manual = [5]`. (f) El subcomando `corrida` con `--nch 0` da error antes de simular |
+| PR-10 | Validaciones | D-14, D-16, T-10 | (a) Un catálogo con `modo = "regresion"` da error al cargarlo, y el mensaje dice que es de la segunda iteración. (b) Da error al cargarlo un catálogo con una familia que no existe en scipy, con una que existe pero no es una distribución (`describe`) o con `gamma` y `a = -1` (media no finita). (c) Con los datos de PR-06, pero con búsqueda `constante` −1: E[S] = 2 pasa los controles, y la corrida da error al procesar el primer pedido (T = 1), con la variable TB en el mensaje. (d) Una configuración sin el nivel `base` da error. (e) Una configuración con `horizonte_min = 0` da error, con la clave en el mensaje, y también una con `horizonte_min = inf`, con `rango_manual = [0, 2]` o con `rango_manual = [5]`; en cambio, una con `umbral_tolerancia_min = inf` es válida (§3.2). (f) El subcomando `corrida` con `--nch 0` da error antes de simular |
 | PR-11 | Experimento reducido de punta a punta | D-06, D-10 | Catálogo V1, solo el nivel base, 2 réplicas y `rango_manual` de 8 a 10; las demás claves, como en `config/experimento.toml`: `corridas.csv` tiene 6 filas (3 flotas por 2 réplicas); `experimento.json` tiene el E[S], la carga del nivel base y las flotas actual y peor de PR-08; y el análisis genera todos sus archivos sin errores |
 
 ### 12.3 PR-01: corrida calculada a mano
@@ -1610,3 +1612,4 @@ Mientras se esperan las FDP de la V2, las etapas 1 a 4 se hacen con la V1. Pasar
 | 0.1 | 2026-10-02 | Borrador: secciones 0 a 7 y 14 a 16 completas; 8 a 13 con su alcance. Primera y segunda iteración separadas (§1.4, §5.10); tarifa en modo "independiente" (T-17). Basado en el modelo v2.1 | Etapas A y B del plan, más la sección 5 adelantada para definir el entregable de las FDP; recorte de la primera iteración por el plazo (D-16) |
 | 1.0 | 2026-10-02 | Secciones 8 a 13 completas: orquestación, salidas, análisis, errores y casos borde, pruebas (con la corrida calculada a mano) y plan de implementación. Decisiones técnicas T-18 a T-23. El registro de eventos deja de ser una clave de configuración (T-18). Ajustes: intervalos de los catálogos de prueba sin escalar (§5.2), búfer solo para el tipo `scipy` (T-09), precisión de la forma de la gamma (§5.7), la ruta del catálogo se resuelve desde la carpeta de la configuración (§3.1) e instalación del paquete (T-23). Basado en el modelo v2.2 | Etapas C, D y E del plan |
 | 1.1 | 2026-10-02 | Aclaraciones para implementar sin preguntar, sin cambiar ninguna decisión. §3.2 y T-08 toman la semilla base de la sección 9.2 del modelo. Tipos en la configuración: enteros donde se piden reales, nunca booleanos (§3.3). E[S] tiene que ser finito (§3.4). Parámetros del motor y firma de `crear_fuentes`: la media del intervalo y v van a las fuentes (§4.6, §5.1, §8.2 a §8.4). Método fijo para la exponencial de IA (§5.2). Claves obligatorias del catálogo, `[IA]` prohibida en V1 y V2, encabezado de la V1 y orden y alcance de la validación (§5.6, §5.7, §5.9). Precondiciones del motor (§6.1). Estructura exacta de `experimento.json` (§9.1), columnas enteras (§9) y registro de eventos (§9.3). Agregación, formato y orden de los avisos y nombre de la carpeta del análisis (§10). Datos y tolerancias de PR-01, PR-03, PR-08 a PR-11 (§12). Búfer de 1.024 (T-09). Validación de rangos de la configuración y de las opciones de la línea de comandos en la primera iteración, para que se cumplan las precondiciones del motor (§3.3, §8.6, PR-10 (e) y (f)). Alcance de la validación del catálogo alineado en §1.4, §5.9, §5.10.3, T-14 y T-16. Forma en memoria y formato del registro de eventos (§9.3, §12.3). Rutas en `experimento.json` (§9.1), orden de las filas del análisis y fila del escenario mejor sin NCH\* (§10.4, §10.6). Contenido de `requirements.txt` (T-23). La etapa 6 no espera a la 5 (§0.2, regla 9, y §13). Estado: aprobado. Basado en el modelo v2.3 | Revisión por tres lectores sin contexto, que siguieron las rutinas literalmente y reprodujeron todas las pruebas |
+| 1.2 | 2026-10-02 | Solo U admite infinito: en los demás reales de la configuración, `inf` es un error (§3.2, con la precondición de §6.1, la tabla de §11 y PR-10 (e)). Sin cambios en el modelo | Consulta durante la implementación de la etapa 1: §3.2 decía "se admite infinito" solo para U, pero con "> 0" a secas `inf` pasaba la validación en los demás reales y podía dejar el motor en un ciclo sin fin |
