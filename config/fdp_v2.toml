@@ -1,0 +1,36 @@
+# Catálogo de FDP definitivas (V2): SDD §5.6.
+# Distancia y tarifa ajustadas al dataset de Kaggle (Lyft, Boston, nov-dic 2018) en notebooks/fdps.ipynb.
+# Búsqueda y demora: iguales a la V1 (modelo §4.2). El intervalo entre pedidos no va acá (D-01).
+
+[catalogo]
+version = "V2"
+fecha = "2026-10-02"
+responsable = "Grupo 6"
+origen = "notebooks/fdps.ipynb"
+semilla_notebook = 20261002
+
+[TB]                       # gamma con media 5 y desvío 1,5 (igual que la V1)
+tipo = "scipy"
+familia = "gamma"
+parametros = { a = 11.111111111111112, scale = 0.45 }
+
+[D]                        # Weibull ajustada a 131.232 consultas de Lyft deduplicadas (timestamp, origen, destino); elegida por BIC entre lognorm, gamma y weibull_min
+tipo = "scipy"
+familia = "weibull_min"
+parametros = { c = 1.7369116327905525, loc = 0.3309934599319153, scale = 2.083267038112721 }
+
+[DEM]                      # exponencial con media 0,8 (igual que la V1)
+tipo = "scipy"
+familia = "expon"
+parametros = { scale = 0.8 }
+
+[TAR]                      # normal asimétrica ajustada a los precios del producto Lyft sin recargo dinámico; elegida por BIC; cdf(0) ≈ 2e-109
+modo = "independiente"
+tipo = "scipy"
+familia = "skewnorm"
+parametros = { a = 11.302161887348964, loc = 6.577355813351607, scale = 3.403040560332343 }
+
+[TAR.diagnostico]
+n_filas = 47040
+media_datos_usd = 9.281423894557824
+desvio_datos_usd = 2.0661033973469776

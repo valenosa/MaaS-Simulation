@@ -1,23 +1,19 @@
 # notebooks/
 
-Análisis exploratorio y ajuste de FDPs (trabajo heredado del TP4). El notebook es [`NotebookFDPs.ipynb`](NotebookFDPs.ipynb).
+El notebook vigente es [`fdps.ipynb`](fdps.ipynb): explica de dónde sale cada FDP del simulador y genera los valores de [`config/fdp_v2.toml`](../config/fdp_v2.toml). Reemplaza a los notebooks del TP4; al principio tiene una sección, "Qué cambió respecto del notebook del TP4".
 
-## Antes de trabajar acá
+## Cómo correrlo
 
-Leé estas secciones. Tienen todo lo necesario y son la única fuente: si algo de este README las contradijera, valen ellas.
+1. Poner el dataset en `data/raw/dataset-uber_lyft.csv` (ver [`data/README.md`](../data/README.md)).
+2. Instalar las dependencias: `pip install -r requirements.txt`.
+3. Abrirlo desde esta carpeta y ejecutarlo de arriba hacia abajo. No usa Google Drive ni Fitter.
 
-| Qué | Dónde |
-|---|---|
-| Reglas para ajustar FDPs | [`docs/modelo.md`](../docs/modelo.md), sección 4.3 |
-| Plan de trabajo: qué hacer, criterios de aceptación y qué entregar | [`docs/modelo.md`](../docs/modelo.md), sección 4.5 |
-| Formato exacto del entregable (`config/fdp_v2.toml`) | [`docs/sdd.md`](../docs/sdd.md), sección 5.6 |
+La última sección compara los parámetros del ajuste con los de `config/fdp_v2.toml`: si alguien cambia uno sin el otro, se nota.
 
-## Qué falta, en resumen
+## Antes de cambiar una FDP
 
-- **Para la entrega (primera iteración):** rehacer el ajuste de la distancia con familias positivas (sección 4.5.1) y filtrar el recargo dinámico en la tarifa (sección 4.5.2). La búsqueda y la demora ya están definidas en el modelo: no hay que hacer nada con ellas.
-- **Para después (segunda iteración):** la tarifa según la distancia (sección 4.5.6), la validación de la velocidad (sección 4.5.5) y dejar el notebook prolijo y reproducible (sección 4.5.4). Si te sobra tiempo antes de la entrega, podés adelantar cualquiera.
+Las reglas están en [`docs/modelo.md`](../docs/modelo.md), sección 4.3, y el formato del catálogo en [`docs/sdd.md`](../docs/sdd.md), sección 5.6. Un cambio de FDP actualiza en el mismo commit el notebook, el catálogo y el modelo (sección 4.5.3).
 
-## Al subir el notebook
+## Al subirlo
 
-- Dejá las salidas visibles: GitHub muestra el notebook renderizado y es la evidencia del trabajo para los docentes.
-- Antes de subirlo, comprobá que corran las celdas que producen los valores entregados.
+Dejá las salidas visibles: GitHub muestra el notebook renderizado y es la evidencia del trabajo para los docentes.

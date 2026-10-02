@@ -2,8 +2,8 @@
 
 **Simulador MaaS · cantidad óptima de choferes · Lyft, zona de Boston**
 
-- **Versión:** 1.3
-- **Basado en:** modelo v2.3 ([`modelo.md`](modelo.md))
+- **Versión:** 1.4
+- **Basado en:** modelo v2.4 ([`modelo.md`](modelo.md))
 - **Fecha:** 2 de octubre de 2026
 - **Estado:** aprobado para implementar la primera iteración.
 - **Autores:** _completar integrantes del grupo_
@@ -124,7 +124,7 @@ El documento está completo para la primera iteración y aprobado para implement
 | Versión | Distribuciones | Para qué | Bloqueada por |
 |---|---|---|---|
 | V1 | Las provisorias del modelo §4.2, en el catálogo `config/fdp_v1.toml` (§5.7). La búsqueda y la demora ya son las definitivas | Construir, probar y verificar todo el simulador | Nada |
-| V2 | Las definitivas, en el catálogo `config/fdp_v2.toml` (§5.6). Respecto de la V1, solo cambian la distancia y la tarifa | Obtener los resultados de la entrega | P-03 y P-04 |
+| V2 | Las definitivas, en el catálogo `config/fdp_v2.toml` (§5.6). Respecto de la V1, solo cambian la distancia y la tarifa | Obtener los resultados de la entrega | Nada: P-03 y P-04 resueltos en el modelo v2.4 |
 
 Pasar de la V1 a la V2 es cambiar el archivo de catálogo en la configuración. No requiere cambios de código ni de este documento, siempre que las FDP definitivas usen los tipos soportados (§5.3).
 
@@ -133,7 +133,7 @@ Pasar de la V1 a la V2 es cambiar el archivo de catálogo en la configuración. 
 | Pendiente | Efecto en la implementación |
 |---|---|
 | P-01, P-02, P-09 | Ninguno: son consultas o avisos a la cátedra |
-| P-03, P-04 | Solo el contenido del catálogo de la V2 |
+| P-03, P-04 | Resueltos en el modelo v2.4: solo cambió el contenido del catálogo de la V2, sin cambios de código |
 | P-05, P-06 | Resueltos: ya están en el catálogo de la V1 (§5.7) |
 | P-07 | Segunda iteración. Si cambia la velocidad, se cambia solo en la configuración |
 | P-10 | Segunda iteración. Se resuelve con corridas adicionales, cambiando el umbral U en la configuración |
@@ -517,7 +517,7 @@ Esta sección define el **entregable de quien complete las FDP definitivas** (mo
 version = "V2"                           # "V1", "V2" o "PRUEBA"; la única clave obligatoria de esta sección
 fecha = "AAAA-MM-DD"                     # las demás claves de [catalogo] son informativas
 responsable = "…"
-origen = "notebooks/NotebookFDPs.ipynb"  # de dónde salen los valores
+origen = "notebooks/fdps.ipynb"          # de dónde salen los valores
 semilla_notebook = …                     # semilla con la que se obtuvieron
 
 [TB]                                     # tiempo de búsqueda: definido en el modelo §4.2
@@ -1614,3 +1614,4 @@ Mientras se esperan las FDP de la V2, las etapas 1 a 4 se hacen con la V1. Pasar
 | 1.1 | 2026-10-02 | Aclaraciones para implementar sin preguntar, sin cambiar ninguna decisión. §3.2 y T-08 toman la semilla base de la sección 9.2 del modelo. Tipos en la configuración: enteros donde se piden reales, nunca booleanos (§3.3). E[S] tiene que ser finito (§3.4). Parámetros del motor y firma de `crear_fuentes`: la media del intervalo y v van a las fuentes (§4.6, §5.1, §8.2 a §8.4). Método fijo para la exponencial de IA (§5.2). Claves obligatorias del catálogo, `[IA]` prohibida en V1 y V2, encabezado de la V1 y orden y alcance de la validación (§5.6, §5.7, §5.9). Precondiciones del motor (§6.1). Estructura exacta de `experimento.json` (§9.1), columnas enteras (§9) y registro de eventos (§9.3). Agregación, formato y orden de los avisos y nombre de la carpeta del análisis (§10). Datos y tolerancias de PR-01, PR-03, PR-08 a PR-11 (§12). Búfer de 1.024 (T-09). Validación de rangos de la configuración y de las opciones de la línea de comandos en la primera iteración, para que se cumplan las precondiciones del motor (§3.3, §8.6, PR-10 (e) y (f)). Alcance de la validación del catálogo alineado en §1.4, §5.9, §5.10.3, T-14 y T-16. Forma en memoria y formato del registro de eventos (§9.3, §12.3). Rutas en `experimento.json` (§9.1), orden de las filas del análisis y fila del escenario mejor sin NCH\* (§10.4, §10.6). Contenido de `requirements.txt` (T-23). La etapa 6 no espera a la 5 (§0.2, regla 9, y §13). Estado: aprobado. Basado en el modelo v2.3 | Revisión por tres lectores sin contexto, que siguieron las rutinas literalmente y reprodujeron todas las pruebas |
 | 1.2 | 2026-10-02 | Solo U admite infinito: en los demás reales de la configuración, `inf` es un error (§3.2, con la precondición de §6.1, la tabla de §11 y PR-10 (e)). Sin cambios en el modelo | Consulta durante la implementación de la etapa 1: §3.2 decía "se admite infinito" solo para U, pero con "> 0" a secas `inf` pasaba la validación en los demás reales y podía dejar el motor en un ciclo sin fin |
 | 1.3 | 2026-10-02 | Sin NCH\*, la fila del escenario mejor tiene vacías todas las celdas salvo `escenario` y `nivel`, incluidas `n_replicas`, `n_sin_pedidos`, `cumple` y `en_el_limite` (§10.4, §10.6). Sin cambios en el modelo | Consulta durante la implementación de la etapa 4: §10.4 decía "la flota y todas sus métricas vacías", pero no qué iba en las demás columnas de la fila |
+| 1.4 | 2026-10-02 | Sin cambios de especificación: el catálogo `config/fdp_v2.toml` ya existe (§1.2, §1.3) y usa `weibull_min` y `skewnorm`, dos familias de `scipy` admitidas por §5.3. El notebook de las FDP pasa a ser `notebooks/fdps.ipynb` (ejemplo de §5.6). Basado en el modelo v2.4 | FDP definitivas (P-03 y P-04) |

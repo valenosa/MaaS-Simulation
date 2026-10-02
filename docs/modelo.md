@@ -2,12 +2,12 @@
 
 **Lyft · zona de Boston · simulación evento a evento**
 
-- **Versión:** 2.3
+- **Versión:** 2.4
 - **Fecha:** 2 de octubre de 2026
 - **Estado:** aprobado para la primera iteración
 - **Materia:** Simulación · UTN FRBA · Trabajo Práctico Nº 5
 - **Autores:** _completar integrantes del grupo_
-- **Reemplaza a:** v2.2 (los cambios están en la sección 13)
+- **Reemplaza a:** v2.3 (los cambios están en la sección 13)
 
 ---
 
@@ -226,10 +226,10 @@ Por eso el dataset sirve para algunas variables y no para otras. El detalle est�
 |---|---|---|---|---|---|
 | IA | Intervalo entre pedidos (min) | Supuesto (D-01) | Exponencial, media 2,5 (niveles de demanda en 9.3) | La misma | Definitiva |
 | TB | Tiempo de búsqueda (min) | Supuesto | Gamma con media 5 y desvío 1,5: forma ≈ 11,11 y escala 0,45. No se ajusta a datos | La misma | Definitiva (P-06 resuelto) |
-| D | Distancia (mi) | Dataset: Lyft, deduplicado por timestamp + origen + destino | Lognormal, gamma o Weibull, elegida por BIC y gráfico QQ. La distribución empírica queda para la segunda iteración | Lognormal (μ = 1, σ = 0,5), media 3,08 | Pendiente (P-03): plan en 4.5.1 |
+| D | Distancia (mi) | Dataset: Lyft, deduplicado por timestamp + origen + destino | **Weibull** (`weibull_min`: c = 1,7369, loc = 0,3310, scale = 2,0833), media 2,19, elegida por BIC entre lognormal, gamma y Weibull. La distribución empírica queda para la segunda iteración | Lognormal (μ = 1, σ = 0,5), media 3,08 | Definitiva (P-03 resuelto en v2.4) |
 | DEM | Demora por tráfico (min) | Supuesto | Exponencial con media 0,8 | La misma | Definitiva (P-05 resuelto) |
 | TV | Tiempo de viaje (min) | Calculado | TV = D × 60 / v + DEM, con v = 13 mi/h | La misma | Velocidad sin validar: segunda iteración (P-07) |
-| TAR | Tarifa (USD) | Dataset: producto `Lyft`, sin recargo dinámico | **Primera iteración:** FDP ajustada a los precios, sin relación con D (S-14). **Segunda iteración:** base + k × D + residuo, con base y k por regresión lineal simple y el residuo con su propia FDP; si queda por debajo de la tarifa mínima, se vuelve a sortear el residuo (D-14, D-15) | Uniforme entre 5 y 25, independiente de D | Pendiente (P-04): plan en 4.5.2. Segunda iteración (P-14): plan en 4.5.6 |
+| TAR | Tarifa (USD) | Dataset: producto `Lyft`, sin recargo dinámico | **Primera iteración:** **normal asimétrica** (`skewnorm`: a = 11,302, loc = 6,577, scale = 3,403), media 9,28 USD, ajustada a 47.040 precios, sin relación con D (S-14). **Segunda iteración:** base + k × D + residuo, con base y k por regresión lineal simple y el residuo con su propia FDP; si queda por debajo de la tarifa mínima, se vuelve a sortear el residuo (D-14, D-15) | Uniforme entre 5 y 25, independiente de D | Definitiva para la primera iteración (P-04 resuelto en v2.4). Segunda iteración (P-14): plan en 4.5.6 |
 
 **Parámetros de la búsqueda y de la demora.** Con media m = 5 y desvío s = 1,5, la gamma tiene forma = (m / s)² ≈ 11,11 y escala = s² / m = 0,45; en scipy es `gamma` con `a` = forma y `scale` = escala. La demora es `expon` con `scale` = 0,8. Las dos se usan igual en la V1 y en la V2 del simulador. En versiones anteriores eran normales recortadas (`max(1, N(5; 1,5))` y `max(0, N(0; 2))`): se descartaron porque el recorte deja picos artificiales en el piso (sección 4.3).
 
@@ -254,14 +254,14 @@ $$
 
 Por linealidad de la esperanza, E[S] se calcula **de forma exacta** a partir de las medias de las FDP, sin necesidad de simular. Se calcula una sola vez, antes de las corridas, y se usa sin redondear.
 
-| Valor | Con las FDP provisorias |
+| Valor | Con las FDP provisorias (entre paréntesis, con las definitivas) |
 |---|---|
 | E[TB] | 5,00 min |
-| E[D] | 3,08 mi |
-| E[TV] = 60 × E[D] / 13 + E[DEM] | 14,22 + 0,80 = 15,02 min |
-| **E[S]** | **20,02 min** |
+| E[D] | 3,08 mi (V2: 2,19 mi) |
+| E[TV] = 60 × E[D] / 13 + E[DEM] | 14,22 + 0,80 = 15,02 min (V2: 10,09 + 0,80 = 10,89 min) |
+| **E[S]** | **20,02 min (V2: 15,89 min)** |
 
-> **Sensibilidad a tener en cuenta.** Con las FDP provisorias, la carga del nivel base (sección 9.3) da 8,007, apenas por encima de 8. Si la demora por tráfico tuviera media 0, daría 7,69, y la flota actual (D-07) pasaría de 9 a 8 choferes. Por eso los números de este documento son ilustrativos hasta que se carguen las FDP definitivas. Con la distancia real (media de 2,19 mi según el notebook), E[S] bajaría a unos 16 minutos y la flota actual, a unos 7 choferes: el simulador lo recalcula solo.
+> **Sensibilidad a tener en cuenta.** Con las FDP provisorias, la carga del nivel base (sección 9.3) da 8,007, apenas por encima de 8. Si la demora por tráfico tuviera media 0, daría 7,69, y la flota actual (D-07) pasaría de 9 a 8 choferes. Por eso los números calculados con las FDP provisorias eran solo ilustrativos. Con las FDP definitivas (v2.4), E[S] = 15,89 minutos, la carga base es 6,36 y la flota actual, 7 choferes: el simulador lo recalcula solo.
 
 ### 4.5 Plan de trabajo para las FDP definitivas
 
@@ -269,7 +269,7 @@ Esta sección es para quien complete las FDP: un integrante del grupo o un agent
 
 El entregable es un archivo que el simulador lee directamente. Su formato exacto está en la sección 5.6 del SDD.
 
-**Si la tarea la hace un agente de IA,** pasale esta sección, la 4.3, la 5.6 del SDD y el notebook (`notebooks/NotebookFDPs.ipynb`). Pedile que frene y avise cuando un criterio de aceptación no se cumpla, en lugar de seguir adelante.
+**Si la tarea la hace un agente de IA,** pasale esta sección, la 4.3, la 5.6 del SDD y el notebook (`notebooks/fdps.ipynb`). Pedile que frene y avise cuando un criterio de aceptación no se cumpla, en lugar de seguir adelante.
 
 **Qué falta y en qué iteración**
 
@@ -306,6 +306,8 @@ El entregable es un archivo que el simulador lee directamente. Su formato exacto
 
 **Entregable:** la familia y sus parámetros.
 
+**Resultado (v2.4):** Weibull, `weibull_min` con c = 1,7369, loc = 0,3310 y scale = 2,0833, ajustada a 131.232 consultas en `notebooks/fdps.ipynb` (la misma que había encontrado el grupo en el notebook del TP4). Ningún valor ≤ 0 en 10.000 generados y media generada a +0,2 % de la de los datos (2,19 mi). El gráfico QQ muestra desvíos en las colas, porque las distancias salen de rutas fijas (sección 12.2).
+
 #### 4.5.2 Tarifa (P-04) · primera iteración
 
 En la primera iteración la tarifa se sortea de su propia FDP, sin relación con la distancia (D-14, S-14). **Es lo que el notebook ya hace:** ajusta una FDP a los precios del producto estándar (le dio una `johnsonsb` con media de 17,28 USD). Falta un solo ajuste.
@@ -326,6 +328,8 @@ En la primera iteración la tarifa se sortea de su propia FDP, sin relación con
 **Entregable:** la familia y sus parámetros. Como diagnóstico, además: la cantidad de filas usadas y la media y el desvío de los precios.
 
 **Si el filtro del recargo no llega a hacerse a tiempo,** se puede entregar el ajuste actual del notebook, sin filtrar. En ese caso hay que avisarlo, porque contradice S-10, y declararlo en el documento de la entrega.
+
+**Resultado (v2.4):** normal asimétrica, `skewnorm` con a = 11,302, loc = 6,577 y scale = 3,403, elegida por BIC entre 21 familias en `notebooks/fdps.ipynb`. Se usaron 47.040 precios, con media de 9,28 USD y desvío de 2,07. `cdf(0)` ≈ 2·10⁻¹⁰⁹, ningún valor negativo en 10.000 generados, y media y desvío generados a menos de 0,5 % de los de los datos. La media de 17,28 USD del ajuste anterior correspondía a todos los productos de Lyft mezclados (Lux, XL, Shared…), no al producto estándar.
 
 #### 4.5.3 Entregar e integrar · primera iteración
 
@@ -357,6 +361,8 @@ Con eso, el simulador pasa a la V2 sin cambios de código: el tiempo medio de se
 5. Ejecutar "Reiniciar y ejecutar todo" y comprobar que termina sin errores.
 
 **Criterio de aceptación:** "Reiniciar y ejecutar todo" termina sin errores, y cada número que se cite en los documentos sale de una celda del notebook tal como quedó.
+
+**Resultado (v2.4):** se adelantó a la primera iteración. `notebooks/fdps.ipynb` reemplaza a los notebooks del TP4: no tiene celdas viejas, no ajusta duraciones ni búsquedas generadas, usa generadores con semilla fija y se ejecutó completo de arriba hacia abajo. Además compara sus parámetros con los de `config/fdp_v2.toml`.
 
 #### 4.5.5 Velocidad (P-07) · segunda iteración
 
@@ -672,11 +678,11 @@ Con el estado final se calculan las métricas de la sección 6.
 
 ### 9.3 Niveles de demanda
 
-| Nivel | Variación | Media de IA (min) | λ (pedidos/min) | Pedidos esperados por día | Carga a, con FDP provisorias |
-|---|---|---|---|---|---|
-| Bajo | −30 % | 3,571 | 0,28 | ≈ 403 | 5,60 |
-| **Base** | — | **2,500** | **0,40** | **576** | **8,01** |
-| Alto | +30 % | 1,923 | 0,52 | ≈ 749 | 10,41 |
+| Nivel | Variación | Media de IA (min) | λ (pedidos/min) | Pedidos esperados por día | Carga a, con FDP provisorias | Carga a, con FDP definitivas |
+|---|---|---|---|---|---|---|
+| Bajo | −30 % | 3,571 | 0,28 | ≈ 403 | 5,60 | 4,45 |
+| **Base** | — | **2,500** | **0,40** | **576** | **8,01** | **6,36** |
+| Alto | +30 % | 1,923 | 0,52 | ≈ 749 | 10,41 | 8,26 |
 
 - Una demanda un 30 % mayor significa λ × 1,3, o sea una media de IA de 2,5 / 1,3. No es lo mismo que multiplicar la media por 0,7.
 - La **carga** a = λ × E[S] es la cantidad media de choferes que la demanda mantiene ocupados (se mide en Erlangs). Con menos choferes que la carga, la capacidad media no alcanza para la demanda media.
@@ -687,10 +693,10 @@ $$
 a = \lambda_{base} \cdot E[S] \qquad \text{actual} = \lceil a \rceil \qquad \text{peor} = \lceil a \rceil - 1
 $$
 
-| Flota | Regla | Con FDP provisorias | Utilización (a / NCH) |
+| Flota | Regla | Con FDP provisorias (utilización a / NCH) | Con FDP definitivas (utilización a / NCH) |
 |---|---|---|---|
-| Actual | ⌈a⌉: la menor flota cuya capacidad media cubre la demanda media | 9 | 0,89 |
-| Peor | ⌈a⌉ − 1: la mayor flota con capacidad media por debajo de la demanda media | 8 | 1,00 |
+| Actual | ⌈a⌉: la menor flota cuya capacidad media cubre la demanda media | 9 (0,89) | 7 (0,91) |
+| Peor | ⌈a⌉ − 1: la mayor flota con capacidad media por debajo de la demanda media | 8 (1,00) | 6 (1,06) |
 
 - Se calculan **antes de simular**, solo a partir de las FDP y siempre con la demanda base: son las flotas de hoy, aunque después se analice qué pasa si la demanda cambia.
 - Se recalculan solas al cargar las FDP definitivas.
@@ -704,11 +710,11 @@ Se usa un rango común para los tres niveles de demanda, de modo que los gráfic
 - **Límite inferior:** max(1, ⌈a del nivel bajo⌉ − 2). Muestra una falta de choferes marcada incluso con poca demanda.
 - **Límite superior:** ⌈a del nivel alto⌉ + 6. Muestra la zona de sobreoferta (mucho ocio, mejora casi nula) incluso con mucha demanda.
 
-Con las FDP provisorias el rango va de 4 a 17 choferes. Por construcción, incluye siempre a la flota actual y a la peor.
+Con las FDP provisorias el rango va de 4 a 17 choferes; con las definitivas, de 3 a 15. Por construcción, incluye siempre a la flota actual y a la peor.
 
 ### 9.6 Volumen de corridas
 
-14 flotas × 3 niveles de demanda × 30 réplicas = **1260 corridas**, con unos 1700 pedidos por réplica sumando los tres niveles. Es un volumen chico: no hace falta optimizar el rendimiento del simulador.
+Con las FDP provisorias, 14 flotas × 3 niveles de demanda × 30 réplicas = **1260 corridas**; con las definitivas, 13 flotas y 1170 corridas. Son unos 1700 pedidos por réplica sumando los tres niveles. Es un volumen chico: no hace falta optimizar el rendimiento del simulador.
 
 ### 9.7 Verificación del simulador
 
@@ -742,11 +748,11 @@ Ambas condiciones se evalúan sobre la media de las 30 réplicas.
 
 Los tres escenarios que pide la consigna son tres flotas evaluadas con la demanda base (D-06):
 
-| Escenario | NCH | Qué representa | Con FDP provisorias |
-|---|---|---|---|
-| Peor | ⌈a⌉ − 1 | Una flota por debajo de la demanda media: sin arrepentimiento, la cola crecería sin límite | 8 |
-| Actual | ⌈a⌉ | La flota dimensionada "por el promedio" (sección 1.3) | 9 |
-| Mejor | NCH\* | La menor flota que cumple el criterio | Resultado de la simulación |
+| Escenario | NCH | Qué representa | Con FDP provisorias | Con FDP definitivas |
+|---|---|---|---|---|
+| Peor | ⌈a⌉ − 1 | Una flota por debajo de la demanda media: sin arrepentimiento, la cola crecería sin límite | 8 | 6 |
+| Actual | ⌈a⌉ | La flota dimensionada "por el promedio" (sección 1.3) | 9 | 7 |
+| Mejor | NCH\* | La menor flota que cumple el criterio | Resultado de la simulación | Resultado de la simulación |
 
 ### 10.3 Análisis de sensibilidad
 
@@ -961,8 +967,8 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 |---|---|---|---|
 | P-01 | Confirmar con la cátedra que acepta la demanda como supuesto, ya que la consigna pide FDPs del TP4. | D-01 | No: con este plazo no se puede esperar la respuesta. Se entrega con la decisión justificada en D-01 |
 | P-02 | Confirmar con la cátedra el encuadre de los escenarios y la notación de la TEI. | D-06, D-13 | No: igual que P-01, con D-06 y D-13 |
-| P-03 | Ajustar la FDP de distancia (Lyft, deduplicado). Cómo: sección 4.5.1. | D, E[S], flotas de referencia | **Sí** |
-| P-04 | Ajustar la FDP de la tarifa, sin relación con la distancia (producto estándar sin recargo dinámico). Cómo: sección 4.5.2. | TAR, REC | **Sí** |
+| P-03 | Ajustar la FDP de distancia (Lyft, deduplicado). Cómo: sección 4.5.1. **Resuelto en v2.4:** Weibull (secciones 4.2 y 4.5.1). | D, E[S], flotas de referencia | — |
+| P-04 | Ajustar la FDP de la tarifa, sin relación con la distancia (producto estándar sin recargo dinámico). Cómo: sección 4.5.2. **Resuelto en v2.4:** normal asimétrica (secciones 4.2 y 4.5.2). | TAR, REC | — |
 | P-05 | Definir la FDP de la demora por tráfico, con soporte positivo. **Resuelto en v2.1:** exponencial con media 0,8 (sección 4.2). | TV, E[S], flotas de referencia | — |
 | P-06 | Reemplazar la FDP provisoria de búsqueda (normal recortada). **Resuelto en v2.1:** gamma con media 5 y desvío 1,5 (sección 4.2). | TB | — |
 | P-07 | Validar la velocidad de 13 mi/h con distancia y duración de una misma fuente. Cómo: sección 4.5.5. | TV | No: segunda iteración |
@@ -971,7 +977,7 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 | P-10 | Opcional: analizar la sensibilidad de los resultados al umbral U (por ejemplo, con 10 y 20 minutos). | D-02 | No: segunda iteración |
 | P-11 | Dibujar el diagrama de flujo de la simulación, a partir de la sección 8 y del SDD. El formato de la cátedra no lo exige, pero el grupo lo incluye en la entrega. | Documento de la entrega | **Sí** |
 | P-12 | Redactar el SDD. **Hecho: SDD v1.1, aprobado para implementar la primera iteración.** | Implementación | **Sí** |
-| P-13 | Dejar el notebook de FDPs reproducible. Cómo: sección 4.5.4. | Todas las FDP | No: segunda iteración. En la primera alcanza con que corran las celdas de la distancia y la tarifa |
+| P-13 | Dejar el notebook de FDPs reproducible. Cómo: sección 4.5.4. **Resuelto en v2.4:** `notebooks/fdps.ipynb` (sección 4.5.4). | Todas las FDP | — |
 | P-14 | Hacer que la tarifa dependa de la distancia (regresión). Cómo: sección 4.5.6; en el simulador, sección 5.10 del SDD. | TAR, REC | No: segunda iteración |
 
 ### 12.2 Limitaciones principales
@@ -983,6 +989,7 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 - **La demanda es un supuesto** validado solo en orden de magnitud (D-01).
 - **En la primera iteración, la tarifa no depende de la distancia** (S-14). La recaudación media es correcta, pero cada viaje individual puede tener una tarifa poco coherente con su largo. Se corrige en la segunda iteración (P-14).
 - **La velocidad media no está validada con datos** (S-06, P-07): los tiempos de viaje dependen de un supuesto.
+- **Distancia y tarifa se aproximan con FDP continuas, aunque los datos no lo son.** Las distancias salen de rutas fijas entre unos 12 barrios, y los precios toman solo 11 valores distintos (casi todos 7, 9, 10,5, 11 y 13,5 USD). Las FDP elegidas reproducen la media y el desvío, pero no esa forma escalonada; el gráfico QQ muestra los desvíos. La tarifa no interviene en la decisión de flota, así que solo afecta a la recaudación.
 
 ### 12.3 Segunda iteración
 
@@ -995,7 +1002,7 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 | Tarifa según la distancia (P-14) | Cada viaje con una tarifa coherente con su largo | Sección 4.5.6; en el simulador, sección 5.10 del SDD | Sí: el modo "regresión" de la tarifa |
 | Validar la velocidad (P-07) | Respaldo con datos para un supuesto | Sección 4.5.5 | No, salvo que cambie el valor de la velocidad en la configuración |
 | Sensibilidad al umbral de tolerancia (P-10) | Saber si la conclusión depende del umbral elegido | Correr el experimento con U = 10 y U = 20 | No: solo la configuración |
-| Notebook reproducible (P-13) | Prolijidad del trabajo del TP4 | Sección 4.5.4 | No |
+| ~~Notebook reproducible (P-13)~~ | **Hecho en v2.4** (`notebooks/fdps.ipynb`) | Sección 4.5.4 | No |
 | Distribución empírica para la distancia | Alternativa si ninguna familia ajusta bien | Sección 4.5.1; en el simulador, sección 5.10 del SDD | Sí: un tipo de FDP más |
 | Validación completa de la configuración y del catálogo de FDP | Más protección contra errores de configuración | Secciones 3.3 y 5.10 del SDD | Sí |
 | Contraste con Erlang C y casos borde exhaustivos | Más evidencia de que el simulador es correcto | Sección 9.7; en el simulador, sección 12 del SDD | Sí: pruebas |
@@ -1013,6 +1020,7 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 | 2.1 | 2026-10-02 | Entrega en dos iteraciones (D-16; lista en la sección 12.3). Plan de trabajo para las FDP (sección 4.5). Tarifa: FDP propia en la primera iteración y regresión sobre la distancia en la segunda (D-14 ampliada; D-15, S-13 y S-14 nuevos). Búsqueda gamma y demora exponencial (P-05 y P-06 resueltos). Fichas de la sección 4.2, reglas de la 4.3 y valores de la 4.4 actualizados. Aclaraciones de la primera llegada y del cierre del horizonte (sección 8.4). Pendientes con la columna "¿Para la entrega?"; P-08 resuelto; P-13 y P-14 nuevos | Plazo de entrega y definición de las FDP antes del SDD |
 | 2.2 | 2026-10-02 | Estado de P-12: el SDD está completo (v1.0) y en revisión | Avance del SDD |
 | 2.3 | 2026-10-02 | Semilla base fijada en 20261002, con la regla de no cambiarla después de ver resultados (sección 9.2 y D-09). Aviso de que, con las FDP provisorias, la flota 9 queda en el límite del umbral de abandono. Estado de P-12: SDD v1.1, aprobado. Estado del modelo: aprobado para la primera iteración | Revisión del SDD por lectores sin contexto: la semilla no tenía valor y la conclusión depende de ella |
+| 2.4 | 2026-10-02 | FDP definitivas de la distancia (Weibull) y de la tarifa (normal asimétrica): fichas de la sección 4.2, resultados en las secciones 4.5.1 y 4.5.2, P-03 y P-04 resueltos. Valores de referencia con las FDP definitivas en las secciones 4.4, 9.3 a 9.6 y 10.2. Nueva limitación sobre la forma discreta de distancia y tarifa (sección 12.2). Catálogo `config/fdp_v2.toml` y notebook `notebooks/fdps.ipynb`, que reemplaza a los del TP4 y resuelve P-13 (sección 4.5.4) | Cierre del plan de trabajo de las FDP (sección 4.5.3) |
 
 ### 13.2 De la v1.0 a la v2.0
 
