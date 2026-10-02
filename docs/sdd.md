@@ -2,7 +2,7 @@
 
 **Simulador MaaS · cantidad óptima de choferes · Lyft, zona de Boston**
 
-- **Versión:** 1.2
+- **Versión:** 1.3
 - **Basado en:** modelo v2.3 ([`modelo.md`](modelo.md))
 - **Fecha:** 2 de octubre de 2026
 - **Estado:** aprobado para implementar la primera iteración.
@@ -1172,7 +1172,7 @@ Para cada nivel, la **mejor flota** (NCH\*) es la menor flota que cumple.
 
 ### 10.4 Escenarios y sensibilidad (D-06, D-07; modelo §10.2 y §10.3)
 
-- **Escenarios**, con el nivel base: peor = flota peor y actual = flota actual, las dos tomadas de `experimento.json`; mejor = NCH\* del nivel base. Si la flota peor no existe, se omite (A8). Si no hay NCH\*, la fila del escenario mejor queda con la flota y todas sus métricas vacías (A1).
+- **Escenarios**, con el nivel base: peor = flota peor y actual = flota actual, las dos tomadas de `experimento.json`; mejor = NCH\* del nivel base. Si la flota peor no existe, se omite (A8). Si no hay NCH\*, la fila del escenario mejor queda con `escenario` = `mejor` y `nivel` = `base`, y todas sus demás celdas vacías (A1): la flota, las métricas, `n_replicas`, `n_sin_pedidos`, `cumple` y `en_el_limite`. Sin flota no hay una configuración de la que contar réplicas ni sobre la que evaluar el criterio.
 - **Sensibilidad**, para cada nivel: NCH\* de ese nivel, y cómo le va a la flota actual con esa demanda.
 
 ### 10.5 Gráficos (modelo §10.6, T-21)
@@ -1195,7 +1195,7 @@ Van en `<entrada>/analisis_X<x>_Y<y>/`. X e Y se escriben sin decimales si son e
 |---|---|
 | `parametros.json` | X, Y y el nivel de confianza usados, con las mismas claves que `analisis` en `experimento.json` |
 | `resumen.csv` | Una fila por nivel y flota, ordenadas por nivel, en el orden de la configuración, y después por flota, de menor a mayor: `nivel`, `nch`, `n_replicas` y `n_sin_pedidos`; para cada métrica m (`pet`, `pec`, `pa`, `pto`, `ptc`, `ptv`, `rec`, `recp`, `rpc`), las columnas `m_media`, `m_desvio`, `m_ic_inf` y `m_ic_sup`; y `cumple` y `en_el_limite`, como 0 o 1 |
-| `escenarios.csv` | Una fila por escenario del nivel base, en el orden peor, actual y mejor: una primera columna `escenario` (`peor`, `actual` o `mejor`) y las mismas columnas que `resumen.csv`. Si dos escenarios tienen la misma flota, cada uno tiene su fila |
+| `escenarios.csv` | Una fila por escenario del nivel base, en el orden peor, actual y mejor: una primera columna `escenario` (`peor`, `actual` o `mejor`) y las mismas columnas que `resumen.csv`. Si dos escenarios tienen la misma flota, cada uno tiene su fila. Si no hay NCH\*, la fila `mejor` tiene vacías todas las celdas salvo `escenario` y `nivel` (§10.4) |
 | `sensibilidad.csv` | Una fila por nivel, en el orden de la configuración: `nivel`, `nch_mejor` (vacía si no hay), `nch_actual`, `actual_cumple` (0 o 1) y, para la flota actual en ese nivel, `pet_media`, `pa_media`, `pto_media`, `rec_media` y `recp_media` |
 | `avisos.txt` | Un aviso por línea (§10.3), o "Sin avisos" |
 | `fig_*.png` | Los gráficos de §10.5 |
@@ -1613,3 +1613,4 @@ Mientras se esperan las FDP de la V2, las etapas 1 a 4 se hacen con la V1. Pasar
 | 1.0 | 2026-10-02 | Secciones 8 a 13 completas: orquestación, salidas, análisis, errores y casos borde, pruebas (con la corrida calculada a mano) y plan de implementación. Decisiones técnicas T-18 a T-23. El registro de eventos deja de ser una clave de configuración (T-18). Ajustes: intervalos de los catálogos de prueba sin escalar (§5.2), búfer solo para el tipo `scipy` (T-09), precisión de la forma de la gamma (§5.7), la ruta del catálogo se resuelve desde la carpeta de la configuración (§3.1) e instalación del paquete (T-23). Basado en el modelo v2.2 | Etapas C, D y E del plan |
 | 1.1 | 2026-10-02 | Aclaraciones para implementar sin preguntar, sin cambiar ninguna decisión. §3.2 y T-08 toman la semilla base de la sección 9.2 del modelo. Tipos en la configuración: enteros donde se piden reales, nunca booleanos (§3.3). E[S] tiene que ser finito (§3.4). Parámetros del motor y firma de `crear_fuentes`: la media del intervalo y v van a las fuentes (§4.6, §5.1, §8.2 a §8.4). Método fijo para la exponencial de IA (§5.2). Claves obligatorias del catálogo, `[IA]` prohibida en V1 y V2, encabezado de la V1 y orden y alcance de la validación (§5.6, §5.7, §5.9). Precondiciones del motor (§6.1). Estructura exacta de `experimento.json` (§9.1), columnas enteras (§9) y registro de eventos (§9.3). Agregación, formato y orden de los avisos y nombre de la carpeta del análisis (§10). Datos y tolerancias de PR-01, PR-03, PR-08 a PR-11 (§12). Búfer de 1.024 (T-09). Validación de rangos de la configuración y de las opciones de la línea de comandos en la primera iteración, para que se cumplan las precondiciones del motor (§3.3, §8.6, PR-10 (e) y (f)). Alcance de la validación del catálogo alineado en §1.4, §5.9, §5.10.3, T-14 y T-16. Forma en memoria y formato del registro de eventos (§9.3, §12.3). Rutas en `experimento.json` (§9.1), orden de las filas del análisis y fila del escenario mejor sin NCH\* (§10.4, §10.6). Contenido de `requirements.txt` (T-23). La etapa 6 no espera a la 5 (§0.2, regla 9, y §13). Estado: aprobado. Basado en el modelo v2.3 | Revisión por tres lectores sin contexto, que siguieron las rutinas literalmente y reprodujeron todas las pruebas |
 | 1.2 | 2026-10-02 | Solo U admite infinito: en los demás reales de la configuración, `inf` es un error (§3.2, con la precondición de §6.1, la tabla de §11 y PR-10 (e)). Sin cambios en el modelo | Consulta durante la implementación de la etapa 1: §3.2 decía "se admite infinito" solo para U, pero con "> 0" a secas `inf` pasaba la validación en los demás reales y podía dejar el motor en un ciclo sin fin |
+| 1.3 | 2026-10-02 | Sin NCH\*, la fila del escenario mejor tiene vacías todas las celdas salvo `escenario` y `nivel`, incluidas `n_replicas`, `n_sin_pedidos`, `cumple` y `en_el_limite` (§10.4, §10.6). Sin cambios en el modelo | Consulta durante la implementación de la etapa 4: §10.4 decía "la flota y todas sus métricas vacías", pero no qué iba en las demás columnas de la fila |
