@@ -1,7 +1,4 @@
-numpy
-pandas
-scipy
-matplotlib
+-e .
+pytest>=7.0
 fitter
 jupyter
-pytest

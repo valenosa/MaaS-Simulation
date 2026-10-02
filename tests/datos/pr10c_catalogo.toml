@@ -1,0 +1,26 @@
+# PR-10 (c): los datos de PR-06 con búsqueda constante -1 (SDD §12.2).
+# Demora constante 0 y tarifa constante 10, en modo independiente (SDD §12.4).
+
+[catalogo]
+version = "PRUEBA"
+
+[IA]
+tipo = "secuencia"
+valores = [1, 3, 100]
+
+[TB]
+tipo = "constante"
+valor = -1
+
+[D]
+tipo = "constante"
+valor = 3
+
+[DEM]
+tipo = "constante"
+valor = 0
+
+[TAR]
+modo = "independiente"
+tipo = "constante"
+valor = 10

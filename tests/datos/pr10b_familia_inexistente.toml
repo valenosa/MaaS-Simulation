@@ -1,0 +1,25 @@
+# PR-10 (b): familia que no existe en scipy (SDD §12.2).
+
+[catalogo]
+version = "PRUEBA"
+
+[TB]
+tipo = "scipy"
+familia = "no_existe"
+parametros = { a = 11.111111111111112, scale = 0.45 }
+
+[D]
+tipo = "scipy"
+familia = "lognorm"
+parametros = { s = 0.5, scale = 2.718281828459045, loc = 0 }
+
+[DEM]
+tipo = "scipy"
+familia = "expon"
+parametros = { scale = 0.8 }
+
+[TAR]
+modo = "independiente"
+tipo = "scipy"
+familia = "uniform"
+parametros = { loc = 5, scale = 20 }

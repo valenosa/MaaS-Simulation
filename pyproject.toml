@@ -1,0 +1,22 @@
+# Paquete del simulador (SDD §2.1, T-23).
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simulador_maas"
+version = "1.0.0"
+description = "Simulación evento a evento de una plataforma MaaS: cantidad óptima de choferes (TP5, Simulación, UTN FRBA)"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

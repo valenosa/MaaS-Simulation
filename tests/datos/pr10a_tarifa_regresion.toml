@@ -1,0 +1,30 @@
+# PR-10 (a): tarifa en modo "regresion" (SDD §12.2).
+
+[catalogo]
+version = "PRUEBA"
+
+[TB]
+tipo = "scipy"
+familia = "gamma"
+parametros = { a = 11.111111111111112, scale = 0.45 }
+
+[D]
+tipo = "scipy"
+familia = "lognorm"
+parametros = { s = 0.5, scale = 2.718281828459045, loc = 0 }
+
+[DEM]
+tipo = "scipy"
+familia = "expon"
+parametros = { scale = 0.8 }
+
+[TAR]                      # formato del modo "regresion" (SDD §5.10.1): es de la segunda iteración
+modo = "regresion"
+base_usd = 5.0
+k_usd_por_mi = 2.0
+tarifa_minima_usd = 5.0
+
+[TAR.residuo]
+tipo = "scipy"
+familia = "norm"
+parametros = { scale = 1.0 }

@@ -1,0 +1,25 @@
+# PR-10 (e): rango_manual = [0, 2] (SDD §12.2).
+# Las claves que la prueba no menciona toman los valores de config/experimento.toml (SDD §12.1).
+
+[modelo]
+velocidad_mph = 13
+umbral_tolerancia_min = 15
+horizonte_min = 1440
+
+[demanda]
+media_ia_base_min = 2.5
+niveles = { bajo = 0.7, base = 1.0, alto = 1.3 }
+
+[experimento]
+replicas = 30
+semilla_base = 20261002
+catalogo_fdp = "../../config/fdp_v1.toml"
+rango_margen_inferior = 2
+rango_margen_superior = 6
+rango_manual = [0, 2]
+verificar_invariantes = true
+
+[analisis]
+espera_total_max_min = 10
+abandono_max_pct = 5
+nivel_confianza = 0.95

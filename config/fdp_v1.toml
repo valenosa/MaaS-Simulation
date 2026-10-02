@@ -1,0 +1,29 @@
+# Catálogo de FDP provisorias (V1): SDD §5.7.
+# Traduce la columna "FDP provisoria (mock)" del modelo §4.2 al formato de SDD §5.6.
+# La búsqueda y la demora ya son las definitivas; la V2 solo cambia la distancia y la tarifa.
+
+[catalogo]
+version = "V1"
+fecha = "2026-10-02"
+origen = "docs/modelo.md, sección 4.2"
+
+[TB]                       # gamma con media 5 y desvío 1,5: forma (5 / 1,5)² y escala 1,5² / 5
+tipo = "scipy"
+familia = "gamma"
+parametros = { a = 11.111111111111112, scale = 0.45 }
+
+[D]                        # lognormal (μ = 1, σ = 0,5): s = σ, scale = e^μ
+tipo = "scipy"
+familia = "lognorm"
+parametros = { s = 0.5, scale = 2.718281828459045, loc = 0 }
+
+[DEM]                      # exponencial con media 0,8
+tipo = "scipy"
+familia = "expon"
+parametros = { scale = 0.8 }
+
+[TAR]                      # uniforme entre 5 y 25, independiente de la distancia: loc = a, scale = b − a
+modo = "independiente"
+tipo = "scipy"
+familia = "uniform"
+parametros = { loc = 5, scale = 20 }
