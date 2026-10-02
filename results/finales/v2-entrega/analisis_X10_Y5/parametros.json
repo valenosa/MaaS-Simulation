@@ -1,0 +1,5 @@
+{
+  "espera_total_max_min": 10.0,
+  "abandono_max_pct": 5.0,
+  "nivel_confianza": 0.95
+}

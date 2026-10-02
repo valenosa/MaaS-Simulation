@@ -1,0 +1,70 @@
+{
+  "fecha": "2026-10-02T19:59:06-03:00",
+  "versiones": {
+    "python": "3.13.7",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "simulador_maas": "1.0.0"
+  },
+  "configuracion": {
+    "ruta": "config/experimento.toml",
+    "contenido": "# Parámetros del modelo y del experimento (SDD §3.2).\n# Los valores se copian del modelo (docs/modelo.md), que es la fuente:\n# si el modelo cambia un valor, se cambia también acá, en el mismo commit (SDD §3.1).\n\n[modelo]\nvelocidad_mph = 13             # v: S-06, modelo §4.2\numbral_tolerancia_min = 15     # U: D-02\nhorizonte_min = 1440           # TF: D-05\n\n[demanda]\nmedia_ia_base_min = 2.5        # D-01\nniveles = { bajo = 0.7, base = 1.0, alto = 1.3 }   # factores que multiplican a λ: modelo §9.3 (−30 %, base, +30 %)\n\n[experimento]\nreplicas = 30                  # R: D-05\nsemilla_base = 20261002        # modelo §9.2, D-09: no se cambia después de ver resultados\ncatalogo_fdp = \"fdp_v2.toml\"   # relativa a la carpeta de este archivo (SDD §3.1)\nrango_margen_inferior = 2      # modelo §9.5\nrango_margen_superior = 6      # modelo §9.5\nrango_manual = []              # opcional: [desde, hasta] reemplaza la regla del rango (modelo §10.5)\nverificar_invariantes = true   # T-13\n\n[analisis]\nespera_total_max_min = 10      # X: D-03\nabandono_max_pct = 5           # Y: D-03\nnivel_confianza = 0.95         # modelo §6.3\n"
+  },
+  "catalogo": {
+    "ruta": "config/fdp_v2.toml",
+    "contenido": "# Catálogo de FDP definitivas (V2): SDD §5.6.\n# Distancia y tarifa ajustadas al dataset de Kaggle (Lyft, Boston, nov-dic 2018) en notebooks/fdps.ipynb.\n# Búsqueda y demora: iguales a la V1 (modelo §4.2). El intervalo entre pedidos no va acá (D-01).\n\n[catalogo]\nversion = \"V2\"\nfecha = \"2026-10-02\"\nresponsable = \"Grupo 6\"\norigen = \"notebooks/fdps.ipynb\"\nsemilla_notebook = 20261002\n\n[TB]                       # gamma con media 5 y desvío 1,5 (igual que la V1)\ntipo = \"scipy\"\nfamilia = \"gamma\"\nparametros = { a = 11.111111111111112, scale = 0.45 }\n\n[D]                        # Weibull ajustada a 131.232 consultas de Lyft deduplicadas (timestamp, origen, destino); elegida por BIC entre lognorm, gamma y weibull_min\ntipo = \"scipy\"\nfamilia = \"weibull_min\"\nparametros = { c = 1.7369116327905525, loc = 0.3309934599319153, scale = 2.083267038112721 }\n\n[DEM]                      # exponencial con media 0,8 (igual que la V1)\ntipo = \"scipy\"\nfamilia = \"expon\"\nparametros = { scale = 0.8 }\n\n[TAR]                      # normal asimétrica ajustada a los precios del producto Lyft sin recargo dinámico; elegida por BIC; cdf(0) ≈ 2e-109\nmodo = \"independiente\"\ntipo = \"scipy\"\nfamilia = \"skewnorm\"\nparametros = { a = 11.302161887348964, loc = 6.577355813351607, scale = 3.403040560332343 }\n\n[TAR.diagnostico]\nn_filas = 47040\nmedia_datos_usd = 9.281423894557824\ndesvio_datos_usd = 2.0661033973469776\n"
+  },
+  "analisis": {
+    "espera_total_max_min": 10.0,
+    "abandono_max_pct": 5.0,
+    "nivel_confianza": 0.95
+  },
+  "referencias": {
+    "e_tb": 5.000000000000001,
+    "e_d": 2.187212056817392,
+    "e_dem": 0.8,
+    "e_tv": 10.894824877618731,
+    "e_s": 15.894824877618731,
+    "niveles": {
+      "bajo": {
+        "factor": 0.7,
+        "lambda": 0.27999999999999997,
+        "media_ia": 3.5714285714285716,
+        "carga": 4.450550965733244
+      },
+      "base": {
+        "factor": 1.0,
+        "lambda": 0.4,
+        "media_ia": 2.5,
+        "carga": 6.357929951047493
+      },
+      "alto": {
+        "factor": 1.3,
+        "lambda": 0.52,
+        "media_ia": 1.923076923076923,
+        "carga": 8.265308936361741
+      }
+    },
+    "flota_actual": 7,
+    "flota_peor": 6,
+    "rango": [
+      3,
+      15
+    ],
+    "flotas": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  }
+}
