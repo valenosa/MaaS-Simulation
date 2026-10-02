@@ -5,6 +5,7 @@
 # --- Datos pesados ---
 data/raw/*
 !data/raw/.gitkeep
+notebooks/NotebookFDPs.ipynb
 
 # --- Resultados intermedios ---
 results/pruebas/*

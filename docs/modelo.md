@@ -2,12 +2,12 @@
 
 **Lyft · zona de Boston · simulación evento a evento**
 
-- **Versión:** 2.0
-- **Fecha:** 1 de octubre de 2026
+- **Versión:** 2.1
+- **Fecha:** 2 de octubre de 2026
 - **Estado:** en revisión del equipo
 - **Materia:** Simulación · UTN FRBA · Trabajo Práctico Nº 5
 - **Autores:** _completar integrantes del grupo_
-- **Reemplaza a:** v1.0, presentada en el análisis previo (los cambios están en la sección 13)
+- **Reemplaza a:** v2.0 (los cambios están en la sección 13)
 
 ---
 
@@ -22,12 +22,15 @@ Este documento explica **qué** se modela y **por qué** se tomó cada decisión
 | Revisar por qué se decidió cada cosa | Sección 11 (registro de decisiones) |
 | Encontrar lo que pide la cátedra (variables, TEI, TEF, escenarios) | Secciones 5, 7 y 10 |
 | Programar el simulador | Secciones 4 a 9, y después `sdd.md` |
+| Completar las FDP definitivas (notebook) | Secciones 4.3 y 4.5, y el formato de entrega en la sección 5.6 del SDD |
+| Saber qué queda para después de la entrega | Sección 12.3 (segunda iteración) |
 
 **Convenciones**
 
 - **Unidades:** tiempo en minutos, distancia en millas, dinero en USD.
 - **Identificadores:** D-xx son decisiones (sección 11), S-xx supuestos (sección 3) y P-xx pendientes (sección 12).
 - **Valores numéricos:** están calculados con las FDP provisorias (mock). Cambian cuando se carguen las FDP ajustadas en el TP4; las reglas para calcularlos no cambian.
+- **Iteraciones:** el trabajo se entrega en dos tandas (D-16). La **primera iteración** tiene lo necesario para la entrega. La **segunda iteración** reúne mejoras que no cambian la decisión sobre la flota; se hace una vez que la simulación funcione, o antes si a alguien del grupo le sobra tiempo. Lo que es de la segunda iteración está marcado así en el texto, y la lista completa está en la sección 12.3.
 
 **Contenido**
 
@@ -44,7 +47,7 @@ Este documento explica **qué** se modela y **por qué** se tomó cada decisión
 10. Criterio de decisión y escenarios
 11. Registro de decisiones
 12. Pendientes y limitaciones
-13. Cambios respecto de la v1.0
+13. Cambios
 14. Glosario
 
 ---
@@ -58,6 +61,7 @@ Este documento explica **qué** se modela y **por qué** se tomó cada decisión
 - **Experimento:** días de 24 horas (1440 min), 30 réplicas por configuración, tres niveles de demanda y un rango de flotas (de 4 a 17 choferes con las FDP provisorias).
 - **Escenarios:** peor (flota por debajo de la demanda media), actual (flota dimensionada por el promedio) y mejor (la menor flota que cumple el criterio). Con las FDP provisorias, peor = 8 y actual = 9; el mejor sale de la simulación.
 - **Forma de la respuesta:** "conviene pasar de 9 a N choferes; si la demanda sube un 30 %, harían falta M".
+- **Entrega en dos iteraciones (D-16):** la primera tiene todo lo necesario para una conclusión correcta y defendible. La segunda reúne mejoras que no cambian esa conclusión; la principal es que la tarifa dependa de la distancia (sección 12.3).
 
 ---
 
@@ -85,7 +89,7 @@ Además, el sistema combina elementos que las fórmulas cerradas de teoría de c
 
 ### 1.4 Alcance
 
-**Incluido:** una plataforma, una zona, demanda constante durante el día, arrepentimiento al momento de pedir y tarifa que depende de la distancia.
+**Incluido:** una plataforma, una zona, demanda constante durante el día, arrepentimiento al momento de pedir y tarifa de cada viaje sorteada de su FDP. En la primera iteración la tarifa no depende de la distancia; en la segunda, sí (D-14).
 
 **Fuera de alcance:** tarifa dinámica, ubicación geográfica de choferes y clientes, perfil horario de la demanda, turnos y desconexiones de choferes, cancelaciones durante la espera, viajes compartidos y competencia con otras plataformas.
 
@@ -100,6 +104,9 @@ Además, el sistema combina elementos que las fórmulas cerradas de teoría de c
 | Al menos tres escenarios: actual, mejor y peor | Sección 10.2 |
 | Conclusión sobre el escenario más conveniente | Sección 10.4 |
 | Desarrollo computacional | [`sdd.md`](sdd.md) y la carpeta `src/` |
+| Documento con el formato de la cátedra | Pendiente: se arma al final, con el formato de paper de [`enunciado/formato_papers_estudiantes.doc`](enunciado/formato_papers_estudiantes.doc) |
+| Exposición oral de hasta 10 minutos | Pendiente |
+| Material de trabajo en un repositorio | Este repositorio |
 
 ---
 
@@ -181,13 +188,15 @@ Todo modelo simplifica la realidad. Esta tabla deja explícito qué se simplific
 | S-03 | Demanda homogénea: un pedido cada 2,5 minutos en promedio durante todo el día. Los pedidos llegan de a uno y los intervalos son exponenciales (proceso de Poisson). | No hay datos del perfil horario de Boston (D-01). | No hay horas pico. El nivel de demanda +30 % se puede leer como una aproximación a una hora pico. |
 | S-04 | Cola única por orden de llegada. Si hay varios choferes disponibles, el pedido se asigna al de menor número. | Los choferes son idénticos, así que la elección no cambia ninguna métrica agregada. Se elige la regla más simple y determinista. | Las métricas por chofer individual (viajes de cada uno) no son significativas; solo las agregadas. |
 | S-05 | El tiempo de búsqueda no depende de cuántos choferes haya libres ni de NCH. | No se modela la geografía. | En la realidad, con pocos choferes libres el más cercano suele estar más lejos. El modelo subestima la espera con flotas chicas, así que el NCH recomendado es una **cota inferior**. |
-| S-06 | Tiempo de viaje = distancia ÷ velocidad media de 13 mi/h (≈ 21 km/h), más una demora aleatoria por tráfico. | El dataset no tiene duraciones de viaje. | Depende de la validación de la velocidad (P-07). |
+| S-06 | Tiempo de viaje = distancia ÷ velocidad media de 13 mi/h (≈ 21 km/h), más una demora aleatoria por tráfico. | El dataset no tiene duraciones de viaje. | Los tiempos de viaje dependen de esa velocidad, que en la primera iteración es un supuesto sin validar con datos (P-07, segunda iteración). |
 | S-07 | El cliente solo puede arrepentirse al momento de pedir, según el tiempo estimado que muestra la app. Una vez en la cola, no abandona. El chofer no cancela. | Ver D-02. | Si en la realidad se cancelan pedidos mientras se espera, el abandono real es mayor que el simulado. |
 | S-08 | Todo cliente que recibe un chofer completa el viaje y paga la tarifa al terminar. | Simplificación. | — |
 | S-09 | Al terminar un viaje, el chofer queda disponible en el acto, sin reposicionarse. El traslado hacia el próximo cliente está incluido en el tiempo de búsqueda. | No se modela la geografía. | — |
-| S-10 | Sin tarifa dinámica: la tarifa depende solo de la distancia. | Se modela el producto estándar sin recargo (D-14). | La recaudación no refleja los precios más altos de los momentos de alta demanda. |
+| S-10 | Sin tarifa dinámica: la tarifa se modela con los precios del producto estándar sin recargo. | Se modela el producto estándar sin recargo (D-14). | La recaudación no refleja los precios más altos de los momentos de alta demanda. |
 | S-11 | El día empieza vacío: sin cola y con todos los choferes disponibles. | Condición inicial simple. Con demanda constante, el efecto del arranque dura poco frente a 1440 minutos. | Leve subestimación de la espera en los primeros minutos del día. |
-| S-12 | Los atributos de cada cliente son independientes entre sí, salvo la tarifa y el tiempo de viaje, que dependen de la distancia. | No hay datos que indiquen otra relación. | — |
+| S-12 | Los atributos de cada cliente son independientes entre sí, salvo el tiempo de viaje, que depende de la distancia. La tarifa es independiente en la primera iteración (S-14) y depende de la distancia en la segunda (D-14). | No hay datos que indiquen otra relación. | — |
+| S-13 | **Solo en la segunda iteración**, cuando la tarifa depende de la distancia (D-14): la variación de la tarifa alrededor de la recta de la regresión es la misma para viajes cortos y largos, con una sola FDP para el residuo. | Simplificación: alcanza para la recaudación, que es informativa. | La recaudación media no cambia. La dispersión de la tarifa de cada viaje queda aproximada: probablemente subestimada en los viajes largos y sobreestimada en los cortos. |
+| S-14 | **En la primera iteración**, la tarifa de cada viaje es independiente de su distancia: se sortea de una FDP ajustada a los precios (D-14). | Plazo de entrega: la tarifa según la distancia queda para la segunda iteración (sección 12.3). | La recaudación media no cambia: la tarifa no interviene en ningún evento ni en el criterio, y ningún cliente decide según el largo de su viaje. Cada viaje individual puede tener una tarifa poco coherente con su largo (un viaje corto puede salir caro), y la variabilidad de la recaudación entre días puede diferir levemente. |
 
 ---
 
@@ -201,13 +210,13 @@ El dataset del TP4 (Kaggle, Uber y Lyft en Boston, noviembre y diciembre de 2018
 - Varios días tienen casi exactamente 20.000 filas, incluidos sábado, domingo y lunes. La demanda real no es tan constante.
 - Hay días sin datos o casi vacíos: el script estuvo apagado.
 
-Por eso el dataset sirve para algunas variables y no para otras. El detalle está en [`fdps-decisiones.pdf`](fdps-decisiones.pdf).
+Por eso el dataset sirve para algunas variables y no para otras. El detalle está en [`fdps-decisiones.pdf`](fdps-decisiones.pdf). Ese documento propone modelar la tarifa con una regresión sobre la distancia: esa propuesta quedó para la segunda iteración (D-14).
 
 | Variable | ¿Sale del dataset? | Motivo |
 |---|---|---|
 | Intervalo entre pedidos | No | La diferencia entre timestamps mide el ritmo del script, no la demanda (D-01). |
 | Distancia | Sí | Columna `distance`, deduplicada. |
-| Tarifa | Sí | Columna `price`, solo el producto estándar. |
+| Tarifa | Sí | Columna `price`, solo el producto estándar y sin recargo dinámico. En la primera iteración se le ajusta una FDP propia, sin relación con la distancia; en la segunda, se modela en función de la distancia (D-14). |
 | Tiempo de viaje | No | No existe en el dataset; se calcula a partir de la distancia. |
 | Tiempo de búsqueda | No | No existe en el dataset; es un supuesto. |
 
@@ -216,15 +225,20 @@ Por eso el dataset sirve para algunas variables y no para otras. El detalle est�
 | Símbolo | Variable | Origen | Distribución definitiva | FDP provisoria (mock) | Estado |
 |---|---|---|---|---|---|
 | IA | Intervalo entre pedidos (min) | Supuesto (D-01) | Exponencial, media 2,5 (niveles de demanda en 9.3) | La misma | Definitiva |
-| TB | Tiempo de búsqueda (min) | Supuesto | Gamma o lognormal, media 5 y desvío 1,5 | Normal recortada en 1: `max(1, N(5; 1,5))` | Pendiente (P-06) |
-| D | Distancia (mi) | Dataset: Lyft, deduplicado por timestamp + origen + destino | Lognormal, gamma, Weibull o empírica, elegida por BIC y gráfico QQ | Lognormal (μ = 1, σ = 0,5), media 3,08 | Pendiente (P-03) |
-| DEM | Demora por tráfico (min) | Supuesto | Distribución con soporte positivo, a definir | `max(0, N(0; 2))`, media 0,80 | Pendiente (P-05) |
-| TV | Tiempo de viaje (min) | Calculado | TV = D × 60 / v + DEM, con v = 13 mi/h | La misma | Validación pendiente (P-07) |
-| TAR | Tarifa (USD) | Dataset: producto `Lyft`, sin recargo dinámico | base + k × D + residuo | Uniforme entre 5 y 25, independiente de D | Pendiente (P-04) |
+| TB | Tiempo de búsqueda (min) | Supuesto | Gamma con media 5 y desvío 1,5: forma ≈ 11,11 y escala 0,45. No se ajusta a datos | La misma | Definitiva (P-06 resuelto) |
+| D | Distancia (mi) | Dataset: Lyft, deduplicado por timestamp + origen + destino | Lognormal, gamma o Weibull, elegida por BIC y gráfico QQ. La distribución empírica queda para la segunda iteración | Lognormal (μ = 1, σ = 0,5), media 3,08 | Pendiente (P-03): plan en 4.5.1 |
+| DEM | Demora por tráfico (min) | Supuesto | Exponencial con media 0,8 | La misma | Definitiva (P-05 resuelto) |
+| TV | Tiempo de viaje (min) | Calculado | TV = D × 60 / v + DEM, con v = 13 mi/h | La misma | Velocidad sin validar: segunda iteración (P-07) |
+| TAR | Tarifa (USD) | Dataset: producto `Lyft`, sin recargo dinámico | **Primera iteración:** FDP ajustada a los precios, sin relación con D (S-14). **Segunda iteración:** base + k × D + residuo, con base y k por regresión lineal simple y el residuo con su propia FDP; si queda por debajo de la tarifa mínima, se vuelve a sortear el residuo (D-14, D-15) | Uniforme entre 5 y 25, independiente de D | Pendiente (P-04): plan en 4.5.2. Segunda iteración (P-14): plan en 4.5.6 |
+
+**Parámetros de la búsqueda y de la demora.** Con media m = 5 y desvío s = 1,5, la gamma tiene forma = (m / s)² ≈ 11,11 y escala = s² / m = 0,45; en scipy es `gamma` con `a` = forma y `scale` = escala. La demora es `expon` con `scale` = 0,8. Las dos se usan igual en la V1 y en la V2 del simulador. En versiones anteriores eran normales recortadas (`max(1, N(5; 1,5))` y `max(0, N(0; 2))`): se descartaron porque el recorte deja picos artificiales en el piso (sección 4.3).
 
 ### 4.3 Reglas para el ajuste de las FDPs
 
 - Solo familias con soporte positivo para distancia, búsqueda y demora. Nunca corregir valores negativos con un recorte (`np.clip`): crea un pico falso en el mínimo.
+- Para la tarifa, familias con soporte positivo o con una probabilidad de valores negativos despreciable: menor que 10⁻⁹, que se comprueba con `cdf(0)` de scipy. Por ejemplo, la `johnsonsb` que ajustó el notebook admite valores desde −0,026 USD, pero con probabilidad del orden de 10⁻¹⁸: se acepta.
+- Las variables con signo, como el residuo de la tarifa en la segunda iteración, usan familias que admiten valores negativos (normal, t de Student, Laplace, logística).
+- No ajustar FDP a datos generados por nosotros mismos, como duraciones calculadas o tiempos de búsqueda simulados: el ajuste solo devuelve lo que se puso.
 - Elegir la distribución por BIC y gráfico QQ, no por el p-valor de Kolmogorov-Smirnov: con decenas de miles de datos, ese test rechaza casi cualquier distribución.
 - Leer los parámetros desde el código del notebook (por ejemplo, `get_best()` de Fitter), no copiarlos a mano.
 - Fijar la semilla al principio del notebook y correrlo de arriba hacia abajo.
@@ -244,10 +258,156 @@ Por linealidad de la esperanza, E[S] se calcula **de forma exacta** a partir de 
 |---|---|
 | E[TB] | 5,00 min |
 | E[D] | 3,08 mi |
-| E[TV] = 60 × E[D] / 13 + E[DEM] | 14,22 + 0,80 = 15,01 min |
-| **E[S]** | **20,01 min** |
+| E[TV] = 60 × E[D] / 13 + E[DEM] | 14,22 + 0,80 = 15,02 min |
+| **E[S]** | **20,02 min** |
 
-> **Sensibilidad a tener en cuenta.** Con las FDP provisorias, la carga del nivel base (sección 9.3) da 8,006, apenas por encima de 8. Si la demora por tráfico (P-05) tuviera media 0, daría 7,69, y la flota actual (D-07) pasaría de 9 a 8 choferes. Por eso los números de este documento son ilustrativos hasta que se carguen las FDP definitivas.
+> **Sensibilidad a tener en cuenta.** Con las FDP provisorias, la carga del nivel base (sección 9.3) da 8,007, apenas por encima de 8. Si la demora por tráfico tuviera media 0, daría 7,69, y la flota actual (D-07) pasaría de 9 a 8 choferes. Por eso los números de este documento son ilustrativos hasta que se carguen las FDP definitivas. Con la distancia real (media de 2,19 mi según el notebook), E[S] bajaría a unos 16 minutos y la flota actual, a unos 7 choferes: el simulador lo recalcula solo.
+
+### 4.5 Plan de trabajo para las FDP definitivas
+
+Esta sección es para quien complete las FDP: un integrante del grupo o un agente de IA. Para cada tarea dice qué hay que obtener, cómo, cómo saber que el resultado está bien y qué entregar. Las reglas de la sección 4.3 valen para todo el trabajo.
+
+El entregable es un archivo que el simulador lee directamente. Su formato exacto está en la sección 5.6 del SDD.
+
+**Si la tarea la hace un agente de IA,** pasale esta sección, la 4.3, la 5.6 del SDD y el notebook (`notebooks/NotebookFDPs.ipynb`). Pedile que frene y avise cuando un criterio de aceptación no se cumpla, en lugar de seguir adelante.
+
+**Qué falta y en qué iteración**
+
+| Paso | Tarea | Pendiente | Iteración | Depende de |
+|---|---|---|---|---|
+| 1 | Distancia | P-03 | Primera | — |
+| 2 | Tarifa, sin relación con la distancia | P-04 | Primera | — |
+| 3 | Entregar e integrar | — | Primera | Pasos 1 y 2 |
+| 4 | Notebook reproducible | P-13 | Segunda | — |
+| 5 | Validar la velocidad | P-07 | Segunda | — |
+| 6 | Tarifa según la distancia | P-14 | Segunda | Paso 2 |
+
+- **La búsqueda y la demora no requieren trabajo:** quedaron definidas en la sección 4.2.
+- **Los pasos 1 y 2 son independientes:** se pueden repartir entre dos personas. Los dos se hacen sobre el notebook que ya existe. Para la primera iteración no hace falta dejarlo prolijo, pero las celdas que producen los valores entregados tienen que poder correrse.
+- **Los pasos 4 a 6 son de la segunda iteración** (sección 12.3): se hacen una vez que la simulación funcione con la primera. Si a alguien le sobra tiempo antes de la entrega, puede tomar cualquiera; ninguno bloquea nada.
+
+#### 4.5.1 Distancia (P-03) · primera iteración
+
+**Por qué hay que rehacerla:** la `dgamma` que eligió el notebook genera distancias negativas en el 4 % de los viajes, y menores que la mínima real en el 8 %. Con unos 576 pedidos por día, el simulador se detendría en la primera corrida.
+
+**Datos:** viajes de Lyft deduplicados por timestamp, origen y destino (la tabla `lyft_dist` del notebook): una fila por consulta, unas 131.000 filas, con media de 2,19 millas, mínimo de 0,39 y máximo de 6,33.
+
+**Qué hacer:**
+
+1. Ajustar con Fitter **solo** familias con soporte positivo: lognormal (`lognorm`), gamma (`gamma`) y Weibull (`weibull_min`).
+2. Elegir por BIC (`get_best(method="bic")`) y mirar el gráfico QQ de la elegida.
+3. Comprobar que el parámetro `loc` no sea negativo. Si lo es, la distribución admite distancias negativas: volver a ajustar esa familia fijando `loc` en 0 (en scipy, con `floc=0`).
+4. Como las distancias salen de rutas fijas entre unos 12 barrios, es probable que el histograma tenga varios picos y que ninguna familia ajuste bien en el gráfico QQ. Para la primera iteración se usa igual la mejor de las tres, y se declara como limitación. La distribución empírica (sortear de la propia muestra) queda para la segunda iteración, porque requiere programar un tipo de FDP más en el simulador.
+
+**Criterios de aceptación:**
+
+- En 10.000 valores generados, ninguno es menor o igual a 0.
+- La media generada está dentro de ±2 % de la media de los datos.
+
+**Entregable:** la familia y sus parámetros.
+
+#### 4.5.2 Tarifa (P-04) · primera iteración
+
+En la primera iteración la tarifa se sortea de su propia FDP, sin relación con la distancia (D-14, S-14). **Es lo que el notebook ya hace:** ajusta una FDP a los precios del producto estándar (le dio una `johnsonsb` con media de 17,28 USD). Falta un solo ajuste.
+
+**Datos:** filas del producto estándar (`name == "Lyft"`), sin recargo dinámico (`surge_multiplier == 1`, por S-10) y con precio. Informar cuántas filas quedan.
+
+**Qué hacer:**
+
+1. Agregar al filtro de la tabla `lyft_std` la condición del recargo. Hoy el notebook no la tiene.
+2. Volver a correr el ajuste con Fitter, como ya está en el notebook. Elegir por BIC y mirar el gráfico QQ.
+3. Comprobar que la probabilidad de valores negativos sea despreciable (sección 4.3): `cdf(0)` menor que 10⁻⁹. Si la familia tiene soporte positivo, da 0.
+
+**Criterios de aceptación:**
+
+- `cdf(0)` menor que 10⁻⁹ y ningún valor negativo en 10.000 valores generados.
+- La media y el desvío de los valores generados están dentro de ±5 % de los de los precios filtrados.
+
+**Entregable:** la familia y sus parámetros. Como diagnóstico, además: la cantidad de filas usadas y la media y el desvío de los precios.
+
+**Si el filtro del recargo no llega a hacerse a tiempo,** se puede entregar el ajuste actual del notebook, sin filtrar. En ese caso hay que avisarlo, porque contradice S-10, y declararlo en el documento de la entrega.
+
+#### 4.5.3 Entregar e integrar · primera iteración
+
+1. Completar el catálogo de la V2 (`config/fdp_v2.toml`) con el formato de la sección 5.6 del SDD:
+   - distancia y tarifa: lo que salga de los pasos 1 y 2;
+   - búsqueda y demora: los valores de la sección 4.2, iguales a los de la V1.
+2. Actualizar este documento:
+   - las fichas de la distancia y la tarifa en la sección 4.2 (distribución definitiva y estado);
+   - P-03 y P-04 en la sección 12.1, marcándolos como resueltos sin borrarlos;
+   - los valores de la sección 4.4 y los demás valores ilustrativos que dependan de las FDP.
+3. Subir la versión de este documento y anotar el cambio en la sección 13.
+4. Correr la verificación cruzada (skill `sdd-gobernanza`, script `verificar.py`).
+5. Hacer un único commit con el notebook, el catálogo y este documento.
+
+Con eso, el simulador pasa a la V2 sin cambios de código: el tiempo medio de servicio, las flotas de referencia y el rango de flotas se recalculan solos.
+
+#### 4.5.4 Notebook reproducible (P-13) · segunda iteración
+
+**Objetivo:** que cualquiera pueda correr el notebook de arriba hacia abajo y obtener los mismos números.
+
+**Qué hacer:**
+
+1. Borrar las celdas que quedaron de versiones anteriores o que usan variables que no existen:
+   - el ajuste de `gibrat` para el intervalo entre pedidos, porque D-01 lo define como supuesto;
+   - las celdas que usan `viajes_Uber`, `arribos_por_minuto` o `fdp_IA`.
+2. Borrar la sección "Duración de viaje". La duración no se ajusta: la calcula el simulador a partir de la distancia (D-14).
+3. Reemplazar el ajuste del tiempo de búsqueda sobre datos generados por la definición de la sección 4.2.
+4. Usar un único generador con semilla fija, creado al principio con `numpy.random.default_rng`. No usar la API global (`np.random.seed`, `np.random.normal` y similares).
+5. Ejecutar "Reiniciar y ejecutar todo" y comprobar que termina sin errores.
+
+**Criterio de aceptación:** "Reiniciar y ejecutar todo" termina sin errores, y cada número que se cite en los documentos sale de una celda del notebook tal como quedó.
+
+#### 4.5.5 Velocidad (P-07) · segunda iteración
+
+El tiempo de viaje (TV = D × 60 / v + DEM) depende de la velocidad media v, que en la primera iteración es un supuesto sin validar (S-06).
+
+**Qué hacer:**
+
+1. Bajar una muestra de viajes del dataset de Chicago (*Transportation Network Providers – Trips*) de noviembre y diciembre de 2018. Alcanza con una semana. Se usan las columnas de duración en segundos (*Trip Seconds*) y de distancia en millas (*Trip Miles*).
+2. Quedarse con los viajes de entre 0,39 y 6,33 millas, el mismo rango que nuestra zona, y con duración positiva.
+3. Calcular la velocidad media como millas totales sobre horas totales, y la mediana de la velocidad de cada viaje.
+4. Comparar con 13 mi/h.
+
+Como control adicional, se puede usar un informe anual del DPU: la distancia media dividida por la duración media de los viajes de Boston, las dos del mismo año.
+
+**Criterio de aceptación:** si la velocidad obtenida difiere de 13 mi/h en más de un 20 %, frenar y avisar. Cambiar v es una decisión del modelo y se tramita como tal (sección 11).
+
+**Entregable:** la velocidad obtenida, con su fuente.
+
+#### 4.5.6 Tarifa según la distancia (P-14) · segunda iteración
+
+**Qué es y por qué se hace.** En la primera iteración la tarifa no depende de la distancia (S-14): la recaudación media es correcta, pero un viaje corto puede salir caro. Esta mejora hace que la tarifa de cada viaje sea coherente con su largo. No cambia la decisión sobre la flota (D-14). Se hace una vez que la simulación funcione con la primera iteración; si a alguien le sobra tiempo antes de la entrega, puede adelantarla, porque no bloquea nada.
+
+**Qué hace falta para usarla:** además de este trabajo en el notebook, programar el modo "regresión" de la tarifa en el simulador, que está especificado en la sección 5.10 del SDD.
+
+La tarifa se modela como **tarifa = base + k × distancia + residuo**, con la regla de D-15 para los valores bajos:
+
+- **base** es el costo fijo de un viaje, en USD: la "bajada de bandera".
+- **k** es el precio por milla, en USD por milla.
+- **residuo** es lo que la recta no explica (tráfico, horario, redondeos). Tiene su propia FDP.
+
+**Datos:** los mismos de la sección 4.5.2: producto estándar, sin recargo dinámico y con precio.
+
+**Qué hacer:**
+
+1. Graficar el precio contra la distancia. Tiene que verse que el precio sube con la distancia. La nube va a quedar en columnas, porque las distancias vienen de rutas fijas: es normal.
+2. Ajustar la recta por mínimos cuadrados (regresión lineal simple; por ejemplo, con `scipy.stats.linregress`). Registrar base (la ordenada al origen), k (la pendiente) y R².
+3. Calcular el residuo de cada fila: precio − (base + k × distancia). Su media tiene que dar prácticamente 0.
+4. Ajustar una FDP al residuo con Fitter. Como el residuo tiene signo, usar familias que admiten negativos: normal (`norm`), t de Student (`t`), Laplace (`laplace`) y logística (`logistic`). Elegir por BIC y gráfico QQ.
+5. Calcular la **tarifa mínima**: el precio más bajo de los datos filtrados.
+6. Validar la regla completa. Con las distancias de los propios datos, generar una tarifa para cada fila: base + k × distancia + residuo sorteado; si queda por debajo de la tarifa mínima, volver a sortear el residuo (D-15). Comparar con los precios reales y contar cuántas veces hubo que volver a sortear.
+
+**Criterios de aceptación:**
+
+- k es positivo.
+- R² se informa. Si da menos de 0,5, frenar y avisar antes de seguir: puede haber un problema en el filtrado.
+- Hubo que volver a sortear en menos del 5 % de las filas. Si no, la FDP del residuo no representa bien los viajes cortos: frenar y avisar.
+- La media y el desvío de las tarifas generadas están dentro de ±5 % de los de los precios reales.
+
+**Entregable:** base, k, la familia y los parámetros del residuo y la tarifa mínima, con el formato de la sección 5.10 del SDD. Como diagnóstico, además: R², la cantidad de filas usadas y la fracción de re-sorteos.
+
+**Para el documento de la entrega:** el gráfico del paso 1 con la recta encima, y una línea que explique qué representan base, k y R².
 
 ---
 
@@ -263,11 +423,11 @@ Son las que vienen de afuera del sistema: o las impone el entorno (datos) o las 
 | Datos aleatorios | TB | Tiempo de búsqueda (min) |
 | Datos aleatorios | D | Distancia del viaje (mi) |
 | Datos aleatorios | DEM | Demora por tráfico (min) |
-| Datos aleatorios | TAR | Tarifa (USD), a través de su residuo aleatorio |
+| Datos aleatorios | TAR | Tarifa (USD): en la primera iteración se sortea de su propia FDP; en la segunda, a través del residuo de la regresión (D-14) |
 | Datos calculados | TV | Tiempo de viaje: D × 60 / v + DEM |
 | Datos fijos (supuestos) | v | Velocidad media: 13 mi/h |
 | Datos fijos (supuestos) | U | Umbral de tolerancia del cliente: 15 min (D-02) |
-| Datos fijos (supuestos) | base, k | Parámetros de la tarifa (P-04) |
+| Datos fijos (estimados del dataset) | base, k, TARMIN | **Solo en la segunda iteración:** parámetros de la tarifa según la distancia: costo fijo, precio por milla y tarifa mínima (D-14, D-15, P-14) |
 | **Control** | **NCH** | **Cantidad de choferes conectados. Es la variable de decisión.** |
 
 El umbral U es un dato y no una variable de control: la empresa no decide cuánta paciencia tienen sus clientes.
@@ -435,7 +595,7 @@ Esta sección describe en lenguaje natural qué pasa en cada evento. El SDD la t
 
 ### 8.1 TLL: llega un pedido
 
-1. **Se crea el cliente.** Se registra t_llegada = T, se sortean TB, D, DEM y el residuo de la tarifa, y se calculan TV y TAR. Se suma 1 a NT.
+1. **Se crea el cliente.** Se registra t_llegada = T, se sortean TB, D, DEM y TAR, y se calcula TV. Se suma 1 a NT. En la segunda iteración, TAR se calcula a partir de D con la regla de D-15 (D-14).
 2. **Se agenda la próxima llegada:** TLL = T + IA. Si ese instante es TF o posterior, TLL = HV.
 3. **Si hay un chofer disponible** (Ncd ≥ 1):
    - se elige el chofer disponible de menor número, i;
@@ -459,7 +619,7 @@ Esta sección describe en lenguaje natural qué pasa en cada evento. El SDD la t
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Se arrepiente si Ns ≥ | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | 8 |
 
-> Con las FDP provisorias, E[S] ≈ 20,01 y U − E[TB] = 10. En los casos frontera el TEE da 15,01 minutos, apenas por encima del umbral. Por eso la comparación es estricta (TEE > U) y E[S] se usa sin redondear: un redondeo a 20,0 cambiaría la mitad de esta tabla.
+> Con las FDP provisorias, E[S] ≈ 20,02 y U − E[TB] = 10. En los casos frontera el TEE da 15,01 minutos, apenas por encima del umbral. Por eso la comparación es estricta (TEE > U) y E[S] se usa sin redondear: un redondeo a 20,0 cambiaría la mitad de esta tabla.
 
 ### 8.2 TLC(i): el chofer i llega a buscar al cliente
 
@@ -483,10 +643,14 @@ Esta sección describe en lenguaje natural qué pasa en cada evento. El SDD la t
 - Ncd = NCH; Ncc, Nco y Ns en 0.
 - Todos los contadores y acumuladores en 0.
 - TLC(i) y TPS(i) en HV para todos los choferes.
-- La primera llegada se agenda en TLL = IA (primer intervalo sorteado).
+- La primera llegada se agenda en TLL = IA (primer intervalo sorteado), con la misma regla del paso 2 de la sección 8.1: si cae en TF o después, TLL = HV y no hay pedidos ese día.
 - E[S] y E[TB] ya están calculados (sección 4.4).
 
-**Fin:** cuando TLL = HV y no queda ningún TLC(i) ni TPS(i) pendiente. En ese momento la cola está necesariamente vacía: si quedaran clientes esperando, no habría choferes disponibles (invariante 2) y por lo tanto habría eventos pendientes. Con el estado final se calculan las métricas de la sección 6.
+**Fin:** cuando TLL = HV y no queda ningún TLC(i) ni TPS(i) pendiente. En ese momento la cola está necesariamente vacía: si quedaran clientes esperando, no habría choferes disponibles (invariante 2) y por lo tanto habría eventos pendientes.
+
+**Cierre del horizonte:** si el último evento ocurrió antes de TF, se acumula el tramo que falta hasta TF, con el mismo paso de la sección 8.0. En ese tramo todos los choferes están disponibles, así que es ocio que ningún evento registraría. Así se cumple el invariante 7 (sección 5.7). Si el último evento ocurrió en TF o después, no hay nada que acumular.
+
+Con el estado final se calculan las métricas de la sección 6.
 
 ---
 
@@ -500,7 +664,7 @@ Esta sección describe en lenguaje natural qué pasa en cada evento. El SDD la t
 
 ### 9.2 Números aleatorios
 
-- Hay un generador independiente para cada variable aleatoria: IA, TB, D, DEM y el residuo de la tarifa.
+- Hay un generador independiente para cada variable aleatoria: IA, TB, D, DEM y TAR (en la segunda iteración, el de TAR sortea el residuo de la regresión).
 - Cada réplica r tiene su semilla, y se usa **la misma** para todos los NCH y los tres niveles de demanda. Así, en la réplica r el cliente número k tiene siempre los mismos atributos, y las diferencias entre configuraciones se deben solo a la flota o a la demanda (D-09).
 - Toda corrida es reproducible: con el mismo código y la misma semilla se obtienen exactamente los mismos resultados.
 
@@ -546,12 +710,13 @@ Con las FDP provisorias el rango va de 4 a 17 choferes. Por construcción, inclu
 
 ### 9.7 Verificación del simulador
 
-El SDD define las pruebas. Como mínimo:
+El SDD define las pruebas. En la primera iteración, como mínimo:
 
 - **Casos deterministas:** con FDP constantes, el resultado se puede calcular a mano y comparar.
 - **Invariantes:** los de la sección 5.7 se verifican después de cada evento.
 - **Control de números aleatorios comunes:** en una misma réplica y nivel de demanda, REC + RECP tiene que dar lo mismo para todas las flotas.
-- **Contraste analítico:** sin arrepentimiento y con tiempos de servicio exponenciales, la espera en cola tiene que acercarse a la de la fórmula de Erlang C.
+
+En la segunda iteración se agrega un **contraste analítico:** sin arrepentimiento y con tiempos de servicio exponenciales, la espera en cola tiene que acercarse a la de la fórmula de Erlang C.
 
 ---
 
@@ -739,13 +904,49 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 
 ### D-14 · Origen de cada FDP
 
-- **Contexto:** el dataset no tiene todas las variables y algunas de las que tiene no sirven (sección 4.1).
+- **Contexto:** el dataset no tiene todas las variables y algunas de las que tiene no sirven (sección 4.1). Para la tarifa se evaluaron dos formas: una FDP propia, sin relación con la distancia, y una regresión sobre la distancia.
 - **Alternativas consideradas:**
-  - Tarifa uniforme e independiente de la distancia, como en las FDP provisorias. Descartada: no refleja que los viajes largos cuestan más.
+  - Tarifa uniforme entre 5 y 25 USD, como en las FDP provisorias. Descartada para la entrega: no sale del dataset.
   - Una sola distribución de tarifa que mezcle los seis productos y el recargo dinámico. Descartada: mezcla poblaciones distintas.
   - Ajustarle una FDP a la duración del viaje. Descartada: el dataset no tiene duraciones, y ajustar sobre datos generados por nosotros no aporta información.
-- **Decisión:** del dataset salen solo la distancia y la tarifa (producto estándar, modelada como base + k × distancia + residuo). El tiempo de viaje se calcula desde la distancia sorteada. La búsqueda y la demora por tráfico son supuestos.
-- **Consecuencias:** la tarifa y el tiempo de viaje quedan correlacionados con la distancia, como en la realidad.
+  - Normales recortadas para la búsqueda y la demora, como en las FDP provisorias anteriores. Descartadas: el recorte deja picos artificiales en el piso (sección 4.3).
+  - Tarifa por regresión sobre la distancia: base + k × distancia + residuo. **Postergada a la segunda iteración, no descartada.** Es más realista, porque la tarifa de cada viaje queda coherente con su largo, pero cuesta más trabajo y no cambia la recaudación media ni la decisión sobre la flota (S-14). Se hace una vez que la simulación funcione con la primera iteración (D-16; procedimiento en la sección 4.5.6).
+- **Decisión:**
+  - Del dataset salen solo la distancia y la tarifa.
+  - **Tarifa, primera iteración:** se sortea de una FDP ajustada a los precios del producto estándar sin recargo dinámico, sin relación con la distancia (S-14).
+  - **Tarifa, segunda iteración:** base + k × distancia + residuo, con base y k estimados por regresión lineal simple y el residuo con su propia FDP. Las tarifas por debajo de la mínima se tratan según D-15.
+  - El tiempo de viaje se calcula desde la distancia sorteada.
+  - La búsqueda y la demora por tráfico son supuestos: búsqueda gamma con media 5 y desvío 1,5, y demora exponencial con media 0,8 (sección 4.2).
+- **Consecuencias:** el tiempo de viaje queda correlacionado con la distancia; la tarifa, recién en la segunda iteración. La recaudación media es la misma con las dos formas de la tarifa (S-14). El procedimiento para obtener cada FDP está en la sección 4.5.
+
+### D-15 · Tarifas por debajo de la mínima: se vuelve a sortear el residuo
+
+- **Alcance:** solo la segunda iteración, cuando la tarifa se calcula a partir de la distancia (D-14). En la primera iteración no interviene.
+- **Contexto:** con tarifa = base + k × distancia + residuo (D-14), en un viaje corto un residuo muy negativo puede dar una tarifa absurdamente baja, incluso negativa (P-14).
+- **Alternativas consideradas:**
+  - Recortar al mínimo, es decir, usar el mayor entre la tarifa calculada y la mínima. Descartada: deja un pico artificial en la tarifa mínima (sección 4.3).
+  - Un residuo que multiplica en lugar de sumar: tarifa = (base + k × distancia) × residuo. Garantiza tarifas positivas, pero cambia la forma acordada y complica la regresión.
+  - Aceptar cualquier valor. Descartada: admite tarifas negativas.
+- **Decisión:** si base + k × distancia + residuo queda por debajo de la tarifa mínima observada en los datos filtrados, se vuelve a sortear el residuo hasta que no quede por debajo. Una tarifa igual a la mínima se acepta. La tarifa mínima es un parámetro que entrega el notebook (sección 4.5.6).
+- **Consecuencias:**
+  - La tarifa nunca queda por debajo de la mínima, y no aparecen picos.
+  - Si hay que volver a sortear con frecuencia (en más del 5 % de los viajes), la FDP del residuo no representa bien los viajes cortos y hay que revisarla: es un criterio de aceptación de la sección 4.5.6.
+  - Volver a sortear consume números del generador de la tarifa, que es propio de esa variable (D-09). Los demás atributos del cliente no se alteran, y los números aleatorios comunes se mantienen.
+
+### D-16 · La entrega se hace en dos iteraciones
+
+- **Contexto:** el plazo de entrega es de menos de un día, y todavía falta terminar el SDD, programar, correr el experimento y armar el documento y la presentación. No es posible hacer todo lo diseñado antes de entregar.
+- **Alternativas consideradas:**
+  - Hacer todo en una sola iteración. Descartada: no llega a tiempo.
+  - Simplificar el modelo, por ejemplo sacando el arrepentimiento o las réplicas. Descartada: cambiaría las conclusiones y les quitaría respaldo.
+- **Decisión:**
+  - **Primera iteración (la entrega):** todo lo necesario para una conclusión correcta y defendible, y todo lo que pide la consigna. El modelo se implementa completo: ninguna decisión de diseño queda afuera.
+  - **Segunda iteración:** mejoras que no cambian la decisión sobre la flota ni el cumplimiento de la consigna. La lista está en la sección 12.3.
+  - **Regla para clasificar algo nuevo:** va a la segunda iteración si postergarlo no cambia la decisión sobre la flota ni deja sin cumplir un punto de la consigna. Ante la duda, va a la primera.
+- **Consecuencias:**
+  - La segunda iteración se hace una vez que la simulación funcione con la primera. Cualquier integrante puede adelantar una mejora si le sobra tiempo: ninguna bloquea la entrega.
+  - Lo que es de la segunda iteración está marcado así en este documento y en el SDD. El SDD no lo implementa en la primera, y quien termine la implementación, sea una persona o un agente de IA, tiene que avisarle al equipo que la lista existe (SDD, sección 0.2).
+  - Las limitaciones que deja la primera iteración se declaran en la sección 12.2 y en el documento de la entrega.
 
 ---
 
@@ -753,20 +954,22 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 
 ### 12.1 Pendientes
 
-| ID | Pendiente | Afecta a |
-|---|---|---|
-| P-01 | Confirmar con la cátedra que acepta la demanda como supuesto, ya que la consigna pide FDPs del TP4. | D-01 |
-| P-02 | Confirmar con la cátedra el encuadre de los escenarios y la notación de la TEI. | D-06, D-13 |
-| P-03 | Ajustar la FDP de distancia (Lyft, deduplicado). | D, E[S], flotas de referencia |
-| P-04 | Ajustar el modelo de tarifa y definir qué pasa si el residuo da una tarifa menor que la mínima observada en el dataset. | TAR, REC |
-| P-05 | Definir la FDP de la demora por tráfico, con soporte positivo. | TV, E[S], flotas de referencia |
-| P-06 | Reemplazar la FDP provisoria de búsqueda (normal recortada) por gamma o lognormal con media 5 y desvío 1,5. | TB |
-| P-07 | Validar la velocidad de 13 mi/h con distancia y duración de una misma fuente: el dataset de Chicago de noviembre y diciembre de 2018, o el DPU. | TV |
-| P-08 | Actualizar [`fdps-mock.md`](fdps-mock.md) con generadores por variable con semilla y las FDP corregidas. | D-09 |
-| P-09 | Informar a la cátedra los cambios respecto del análisis previo (sección 13). | — |
-| P-10 | Opcional: analizar la sensibilidad de los resultados al umbral U (por ejemplo, con 10 y 20 minutos). | D-02 |
-| P-11 | Dibujar el diagrama de flujo con el formato de la cátedra, a partir de la sección 8 y del SDD. | Informe |
-| P-12 | Redactar el SDD. | Implementación |
+| ID | Pendiente | Afecta a | ¿Para la entrega? |
+|---|---|---|---|
+| P-01 | Confirmar con la cátedra que acepta la demanda como supuesto, ya que la consigna pide FDPs del TP4. | D-01 | No: con este plazo no se puede esperar la respuesta. Se entrega con la decisión justificada en D-01 |
+| P-02 | Confirmar con la cátedra el encuadre de los escenarios y la notación de la TEI. | D-06, D-13 | No: igual que P-01, con D-06 y D-13 |
+| P-03 | Ajustar la FDP de distancia (Lyft, deduplicado). Cómo: sección 4.5.1. | D, E[S], flotas de referencia | **Sí** |
+| P-04 | Ajustar la FDP de la tarifa, sin relación con la distancia (producto estándar sin recargo dinámico). Cómo: sección 4.5.2. | TAR, REC | **Sí** |
+| P-05 | Definir la FDP de la demora por tráfico, con soporte positivo. **Resuelto en v2.1:** exponencial con media 0,8 (sección 4.2). | TV, E[S], flotas de referencia | — |
+| P-06 | Reemplazar la FDP provisoria de búsqueda (normal recortada). **Resuelto en v2.1:** gamma con media 5 y desvío 1,5 (sección 4.2). | TB | — |
+| P-07 | Validar la velocidad de 13 mi/h con distancia y duración de una misma fuente. Cómo: sección 4.5.5. | TV | No: segunda iteración |
+| P-08 | Actualizar [`fdps-mock.md`](fdps-mock.md) con generadores por variable con semilla y las FDP corregidas. **Resuelto en v2.1:** el archivo queda como una nota que apunta a la sección 4.2 (valores) y a la sección 5 del SDD (implementación). | D-09 | — |
+| P-09 | Informar a la cátedra los cambios respecto del análisis previo (sección 13). | — | **Sí:** se cubre en el documento de la entrega |
+| P-10 | Opcional: analizar la sensibilidad de los resultados al umbral U (por ejemplo, con 10 y 20 minutos). | D-02 | No: segunda iteración |
+| P-11 | Dibujar el diagrama de flujo de la simulación, a partir de la sección 8 y del SDD. El formato de la cátedra no lo exige, pero el grupo lo incluye en la entrega. | Documento de la entrega | **Sí** |
+| P-12 | Redactar el SDD. **En curso:** SDD v0.1. | Implementación | **Sí** |
+| P-13 | Dejar el notebook de FDPs reproducible. Cómo: sección 4.5.4. | Todas las FDP | No: segunda iteración. En la primera alcanza con que corran las celdas de la distancia y la tarifa |
+| P-14 | Hacer que la tarifa dependa de la distancia (regresión). Cómo: sección 4.5.6; en el simulador, sección 5.10 del SDD. | TAR, REC | No: segunda iteración |
 
 ### 12.2 Limitaciones principales
 
@@ -775,10 +978,38 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 - **El abandono simulado es un mínimo.** Los clientes solo pueden arrepentirse al pedir (S-07).
 - **NCH son choferes conectados al mismo tiempo** (S-02), no choferes registrados ni turnos.
 - **La demanda es un supuesto** validado solo en orden de magnitud (D-01).
+- **En la primera iteración, la tarifa no depende de la distancia** (S-14). La recaudación media es correcta, pero cada viaje individual puede tener una tarifa poco coherente con su largo. Se corrige en la segunda iteración (P-14).
+- **La velocidad media no está validada con datos** (S-06, P-07): los tiempos de viaje dependen de un supuesto.
+
+### 12.3 Segunda iteración
+
+**Qué es.** Mejoras que no cambian la decisión sobre la flota ni el cumplimiento de la consigna (D-16). Se hacen una vez que la simulación funcione con la primera iteración. Si a alguien del grupo le sobra tiempo antes de la entrega, puede tomar cualquiera: ninguna bloquea nada.
+
+**Para que no se olvide.** Quien termine la implementación de la primera iteración, sea una persona o un agente de IA, tiene que avisarle al equipo que esta lista existe (SDD, sección 0.2). La lista también figura en el README principal del repositorio.
+
+| Mejora | Qué aporta | Procedimiento | ¿Cambia el código? |
+|---|---|---|---|
+| Tarifa según la distancia (P-14) | Cada viaje con una tarifa coherente con su largo | Sección 4.5.6; en el simulador, sección 5.10 del SDD | Sí: el modo "regresión" de la tarifa |
+| Validar la velocidad (P-07) | Respaldo con datos para un supuesto | Sección 4.5.5 | No, salvo que cambie el valor de la velocidad en la configuración |
+| Sensibilidad al umbral de tolerancia (P-10) | Saber si la conclusión depende del umbral elegido | Correr el experimento con U = 10 y U = 20 | No: solo la configuración |
+| Notebook reproducible (P-13) | Prolijidad del trabajo del TP4 | Sección 4.5.4 | No |
+| Distribución empírica para la distancia | Alternativa si ninguna familia ajusta bien | Sección 4.5.1; en el simulador, sección 5.10 del SDD | Sí: un tipo de FDP más |
+| Validación completa de la configuración y del catálogo de FDP | Más protección contra errores de configuración | Secciones 3.3 y 5.10 del SDD | Sí |
+| Contraste con Erlang C y casos borde exhaustivos | Más evidencia de que el simulador es correcto | Sección 9.7; en el simulador, sección 12 del SDD | Sí: pruebas |
 
 ---
 
-## 13. Cambios respecto de la v1.0
+## 13. Cambios
+
+### 13.1 Registro de versiones
+
+| Versión | Fecha | Cambio | Motivo |
+|---|---|---|---|
+| 1.0 | — | Análisis previo presentado a la cátedra | — |
+| 2.0 | 2026-10-01 | Reescritura completa (detalle en la sección 13.2) | Revisión del modelo como contrato para programar |
+| 2.1 | 2026-10-02 | Entrega en dos iteraciones (D-16; lista en la sección 12.3). Plan de trabajo para las FDP (sección 4.5). Tarifa: FDP propia en la primera iteración y regresión sobre la distancia en la segunda (D-14 ampliada; D-15, S-13 y S-14 nuevos). Búsqueda gamma y demora exponencial (P-05 y P-06 resueltos). Fichas de la sección 4.2, reglas de la 4.3 y valores de la 4.4 actualizados. Aclaraciones de la primera llegada y del cierre del horizonte (sección 8.4). Pendientes con la columna "¿Para la entrega?"; P-08 resuelto; P-13 y P-14 nuevos | Plazo de entrega y definición de las FDP antes del SDD |
+
+### 13.2 De la v1.0 a la v2.0
 
 | Tema | v1.0 | v2.0 | Motivo |
 |---|---|---|---|
@@ -814,9 +1045,13 @@ Cada decisión indica el problema que resuelve, qué alternativas se evaluaron, 
 | FDP | Función de distribución de probabilidad. |
 | HV | *High value*: valor mayor que cualquier instante de la simulación; indica que no hay evento pendiente. |
 | Intervalo de confianza (IC) | Rango que, con un 95 % de confianza, contiene al valor medio real de una métrica. |
+| Iteración (primera y segunda) | Cada tanda de trabajo del proyecto. La primera tiene lo necesario para la entrega; la segunda reúne mejoras que no cambian la decisión sobre la flota (D-16, sección 12.3). |
 | MaaS | *Mobility as a Service*: movilidad como servicio. |
 | Números aleatorios comunes | Técnica que usa los mismos números aleatorios para comparar configuraciones, de modo que las diferencias se deban a la configuración y no al azar. |
+| R² | Coeficiente de determinación de una regresión: la fracción de la variación de una variable que explica la otra. Va de 0 (nada) a 1 (todo). |
+| Regresión lineal simple | Ajuste de una recta a pares de datos (por ejemplo, distancia y precio) por mínimos cuadrados: la recta que minimiza la suma de los cuadrados de los residuos. |
 | Réplica | Una corrida de un día con su propia semilla. |
+| Residuo | Diferencia entre un valor real y el que predice la recta de la regresión. |
 | Semilla | Valor inicial del generador de números aleatorios. Con la misma semilla se obtiene siempre la misma secuencia. |
 | TEE | Tiempo de espera estimado que la app le muestra al cliente. |
 | TEF | Tabla de Eventos Futuros: los eventos pendientes y sus instantes. |
