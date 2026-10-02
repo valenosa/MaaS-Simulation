@@ -2,7 +2,7 @@
 
 **Simulador MaaS · cantidad óptima de choferes · Lyft, zona de Boston**
 
-- **Versión:** 1.4
+- **Versión:** 1.5
 - **Basado en:** modelo v2.4 ([`modelo.md`](modelo.md))
 - **Fecha:** 2 de octubre de 2026
 - **Estado:** aprobado para implementar la primera iteración.
@@ -1243,6 +1243,7 @@ Además se muestran por pantalla la tabla de escenarios y la mejor flota de cada
 - Sus configuraciones y catálogos viven en `tests/datos/`. Los catálogos de prueba tienen `version = "PRUEBA"` y pueden usar los tipos `constante` y `secuencia` y la sección `[IA]` (§5.3, §5.6).
 - Cada configuración de prueba tiene todas las claves obligatorias (§3.3). Las que una prueba no menciona toman los valores de `config/experimento.toml`; en las pruebas de esta sección no cambian el resultado.
 - Una configuración de `tests/datos/` que usa el catálogo V1 lo indica como `catalogo_fdp = "../../config/fdp_v1.toml"`, porque la ruta es relativa a su propia carpeta (§3.1).
+- Las pruebas que usan el catálogo V1 con los demás valores de `config/experimento.toml` (PR-02, PR-03 y PR-08) leen `tests/datos/v1_config.toml`, una copia de `config/experimento.toml` con el catálogo V1. Así no dependen del catálogo que use el experimento, y pasar a la V2 (§13, etapa 5) no cambia ninguna prueba. Si cambia un valor de `config/experimento.toml`, se cambia también en esa copia, en el mismo commit (§3.1).
 - Las pruebas del motor (PR-01, PR-02, PR-05 a PR-07 y PR-10 (c)) pueden llamar a `simular_corrida` directamente, con `registrar_eventos` activo cuando comparan el registro (§4.6).
 - Todas corren con `verificar_invariantes` activo.
 - En las tablas de esta sección los números usan coma decimal, como el resto del documento.
@@ -1252,13 +1253,13 @@ Además se muestran por pantalla la tabla de escenarios y la mejor flota de cada
 | ID | Tipo | Cubre | Qué verifica |
 |---|---|---|---|
 | PR-01 | Corrida calculada a mano | D-02, D-04, D-05, D-08, D-12, INV-01 a INV-09, INV-F | La tabla de eventos de §12.3, evento por evento, y los valores finales |
-| PR-02 | Invariantes | D-14, INV-01 a INV-09, INV-F | Con el catálogo V1, nivel base, flotas 1, 4, 9 y 17 y réplicas 0 a 2: ninguna corrida viola un invariante |
-| PR-03 | Números aleatorios comunes | D-01, D-09 | (a) Con el catálogo V1, nivel base, réplica 0 y flotas 4, 9 y 17: el mismo NT y la misma REC + RECP, con tolerancia relativa de 10⁻⁹. (b) Las fuentes de la réplica 0 en los niveles bajo, base y alto dan los mismos atributos para los primeros 100 pedidos, y sus intervalos entre pedidos son proporcionales a la media de cada nivel, con tolerancia relativa de 10⁻¹² (en punto flotante, el cociente no da exacto) |
+| PR-02 | Invariantes | D-14, INV-01 a INV-09, INV-F | Con `tests/datos/v1_config.toml` (catálogo V1, §12.1), nivel base, flotas 1, 4, 9 y 17 y réplicas 0 a 2: ninguna corrida viola un invariante |
+| PR-03 | Números aleatorios comunes | D-01, D-09 | (a) Con `tests/datos/v1_config.toml` (catálogo V1, §12.1), nivel base, réplica 0 y flotas 4, 9 y 17: el mismo NT y la misma REC + RECP, con tolerancia relativa de 10⁻⁹. (b) Con la misma configuración, las fuentes de la réplica 0 en los niveles bajo, base y alto dan los mismos atributos para los primeros 100 pedidos, y sus intervalos entre pedidos son proporcionales a la media de cada nivel, con tolerancia relativa de 10⁻¹² (en punto flotante, el cociente no da exacto) |
 | PR-04 | Reproducibilidad | D-09 | El experimento de PR-11, corrido dos veces, da archivos `corridas.csv` idénticos |
 | PR-05 | Caso borde: día sin pedidos | D-04, D-05 | §12.4 |
 | PR-06 | Caso borde: eventos simultáneos | D-08, T-06 | §12.4 |
 | PR-07 | Caso borde: TEE igual a U | D-02 | §12.4 |
-| PR-08 | Valores derivados | D-07; secciones 4.4 y 9.3 a 9.5 del modelo | Con el catálogo V1 y `config/experimento.toml`: E[S] = 20,0163854565 y cargas de 5,6045879278, 8,0065541826 y 10,408520437, todos con tolerancia relativa de 10⁻⁹; flota actual 9; peor 8; rango de 4 a 17 |
+| PR-08 | Valores derivados | D-07; secciones 4.4 y 9.3 a 9.5 del modelo | Con `tests/datos/v1_config.toml`, es decir, el catálogo V1 y los demás valores de `config/experimento.toml` (§12.1): E[S] = 20,0163854565 y cargas de 5,6045879278, 8,0065541826 y 10,408520437, todos con tolerancia relativa de 10⁻⁹; flota actual 9; peor 8; rango de 4 a 17 |
 | PR-09 | Análisis | D-03, D-06, D-10, T-22 | §12.5 |
 | PR-10 | Validaciones | D-14, D-16, T-10 | (a) Un catálogo con `modo = "regresion"` da error al cargarlo, y el mensaje dice que es de la segunda iteración. (b) Da error al cargarlo un catálogo con una familia que no existe en scipy, con una que existe pero no es una distribución (`describe`) o con `gamma` y `a = -1` (media no finita). (c) Con los datos de PR-06, pero con búsqueda `constante` −1: E[S] = 2 pasa los controles, y la corrida da error al procesar el primer pedido (T = 1), con la variable TB en el mensaje. (d) Una configuración sin el nivel `base` da error. (e) Una configuración con `horizonte_min = 0` da error, con la clave en el mensaje, y también una con `horizonte_min = inf`, con `rango_manual = [0, 2]` o con `rango_manual = [5]`; en cambio, una con `umbral_tolerancia_min = inf` es válida (§3.2). (f) El subcomando `corrida` con `--nch 0` da error antes de simular |
 | PR-11 | Experimento reducido de punta a punta | D-06, D-10 | Catálogo V1, solo el nivel base, 2 réplicas y `rango_manual` de 8 a 10; las demás claves, como en `config/experimento.toml`: `corridas.csv` tiene 6 filas (3 flotas por 2 réplicas); `experimento.json` tiene el E[S], la carga del nivel base y las flotas actual y peor de PR-08; y el análisis genera todos sus archivos sin errores |
@@ -1401,7 +1402,7 @@ Cada etapa termina cuando pasan sus pruebas. Conviene un commit por etapa, con u
 | 2. Motor | `entidades.py` y `motor.py`, con invariantes y registro de eventos | PR-01, PR-02, PR-05, PR-06, PR-07 y PR-10 (c) |
 | 3. Experimento | `experimento.py` y `__main__.py`, con los subcomandos `experimento` y `corrida` | PR-03 (a), PR-04, PR-10 (f) y PR-11 sin la parte del análisis |
 | 4. Análisis | `analisis.py` y el subcomando `analisis` | PR-09 y PR-11 completa. Además, el experimento completo con la V1 corre y genera tablas y gráficos |
-| 5. V2 | Cuando llegue `config/fdp_v2.toml`: se cambia `catalogo_fdp` y se corre el experimento completo en `results/finales/` | El experimento termina sin errores y el análisis genera sus archivos |
+| 5. V2 | Cuando llegue `config/fdp_v2.toml`: se cambia `catalogo_fdp` en `config/experimento.toml` y se corre el experimento completo en `results/finales/`. Las pruebas no cambian: las que usan la V1 tienen su propia configuración (§12.1) | El experimento termina sin errores y el análisis genera sus archivos |
 | 6. Cierre | Completar "Cómo se corre" en el README principal (instalación y los tres subcomandos de §8.6) y avisarle al equipo | No tiene pruebas propias: termina cuando el README está completo, todas las pruebas de las etapas anteriores pasan y se dio el aviso. No espera a la etapa 5: si `config/fdp_v2.toml` todavía no llegó, se cierra con la V1 y el aviso lo dice |
 
 Mientras se esperan las FDP de la V2, las etapas 1 a 4 se hacen con la V1. Pasar a la V2 no requiere cambios de código (§1.2).
@@ -1615,3 +1616,4 @@ Mientras se esperan las FDP de la V2, las etapas 1 a 4 se hacen con la V1. Pasar
 | 1.2 | 2026-10-02 | Solo U admite infinito: en los demás reales de la configuración, `inf` es un error (§3.2, con la precondición de §6.1, la tabla de §11 y PR-10 (e)). Sin cambios en el modelo | Consulta durante la implementación de la etapa 1: §3.2 decía "se admite infinito" solo para U, pero con "> 0" a secas `inf` pasaba la validación en los demás reales y podía dejar el motor en un ciclo sin fin |
 | 1.3 | 2026-10-02 | Sin NCH\*, la fila del escenario mejor tiene vacías todas las celdas salvo `escenario` y `nivel`, incluidas `n_replicas`, `n_sin_pedidos`, `cumple` y `en_el_limite` (§10.4, §10.6). Sin cambios en el modelo | Consulta durante la implementación de la etapa 4: §10.4 decía "la flota y todas sus métricas vacías", pero no qué iba en las demás columnas de la fila |
 | 1.4 | 2026-10-02 | Sin cambios de especificación: el catálogo `config/fdp_v2.toml` ya existe (§1.2, §1.3) y usa `weibull_min` y `skewnorm`, dos familias de `scipy` admitidas por §5.3. El notebook de las FDP pasa a ser `notebooks/fdps.ipynb` (ejemplo de §5.6). Basado en el modelo v2.4 | FDP definitivas (P-03 y P-04) |
+| 1.5 | 2026-10-02 | PR-02, PR-03 y PR-08 leen `tests/datos/v1_config.toml`, una copia de `config/experimento.toml` con el catálogo V1, en lugar de `config/experimento.toml` (§12.1, §12.2). La etapa 5 aclara que las pruebas no cambian (§13). Sin cambios en el modelo | Consulta antes de la etapa 5: §1.2 y §13 decían que pasar a la V2 era cambiar `catalogo_fdp` en `config/experimento.toml` sin tocar el código, pero §12.2 definía PR-08 con el catálogo V1 y `config/experimento.toml`, así que con la V2 la prueba fallaba |
