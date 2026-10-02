@@ -1,0 +1,26 @@
+# PR-01: corrida calculada a mano (SDD §12.3).
+# Con estos valores, E[TB] = 2, E[D] = 12 y E[S] = 14.
+
+[catalogo]
+version = "PRUEBA"
+
+[IA]
+tipo = "secuencia"
+valores = [1, 1.5, 1.5, 1, 15, 15]
+
+[TB]
+tipo = "secuencia"
+valores = [2, 1, 3, 2, 2]
+
+[D]
+tipo = "secuencia"
+valores = [10, 12, 13, 13, 12]
+
+[DEM]
+tipo = "constante"
+valor = 0
+
+[TAR]
+modo = "independiente"
+tipo = "secuencia"
+valores = [10, 20, 30, 40, 50]

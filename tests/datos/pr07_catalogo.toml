@@ -1,0 +1,26 @@
+# PR-07: TEE igual a U (SDD §12.4).
+# Demora constante 0 y tarifa constante 10, en modo independiente (SDD §12.4).
+
+[catalogo]
+version = "PRUEBA"
+
+[IA]
+tipo = "secuencia"
+valores = [1, 1, 100]
+
+[TB]
+tipo = "constante"
+valor = 0
+
+[D]
+tipo = "constante"
+valor = 3
+
+[DEM]
+tipo = "constante"
+valor = 0
+
+[TAR]
+modo = "independiente"
+tipo = "constante"
+valor = 10

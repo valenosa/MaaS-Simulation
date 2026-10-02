@@ -1,0 +1,26 @@
+# PR-05: día sin pedidos (SDD §12.4).
+# Demora constante 0 y tarifa constante 10, en modo independiente (SDD §12.4).
+
+[catalogo]
+version = "PRUEBA"
+
+[IA]
+tipo = "constante"
+valor = 30
+
+[TB]
+tipo = "constante"
+valor = 1
+
+[D]
+tipo = "constante"
+valor = 1
+
+[DEM]
+tipo = "constante"
+valor = 0
+
+[TAR]
+modo = "independiente"
+tipo = "constante"
+valor = 10
