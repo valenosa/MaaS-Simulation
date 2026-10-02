@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from conftest import CONFIG_EXPERIMENTO, Preparado, dato
+from conftest import CONFIG_V1, Preparado, dato
 from simulador_maas.aleatorios import ErrorFDP
 from simulador_maas.entidades import HV
 from simulador_maas.motor import simular_corrida
@@ -118,7 +118,7 @@ def test_pr01_tipos_del_registro_en_memoria(pr01):
 @pytest.mark.parametrize("nch", [1, 4, 9, 17])
 @pytest.mark.parametrize("r", [0, 1, 2])
 def test_pr02_ninguna_corrida_viola_un_invariante(nch, r):
-    p = Preparado(CONFIG_EXPERIMENTO)
+    p = Preparado(CONFIG_V1)
     resultado, registro = simular_corrida(nch, "base", p.parametros, p.fuentes(r))
     assert registro == []
     assert resultado.nt == resultado.nat + resultado.narr and resultado.nt > 0

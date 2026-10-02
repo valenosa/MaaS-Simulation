@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from conftest import CONFIG_EXPERIMENTO, dato
+from conftest import CONFIG_V1, dato
 from simulador_maas.aleatorios import ErrorCatalogo, cargar_catalogo, crear_fuentes
 from simulador_maas.config import cargar_configuracion
 from simulador_maas.referencias import calcular_referencias
@@ -13,7 +13,7 @@ PEDIDOS = 100
 
 
 def test_pr03b_mismos_atributos_e_intervalos_proporcionales_entre_niveles():
-    config = cargar_configuracion(CONFIG_EXPERIMENTO)
+    config = cargar_configuracion(CONFIG_V1)
     catalogo = cargar_catalogo(config.ruta_catalogo)
     ref = calcular_referencias(config, catalogo)
 

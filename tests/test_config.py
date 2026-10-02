@@ -1,10 +1,11 @@
 """Validación de la configuración: PR-10 (d) y (e) (SDD §3.2, §3.3, §12.2)."""
 
+import dataclasses
 import math
 
 import pytest
 
-from conftest import CONFIG_EXPERIMENTO, dato
+from conftest import CONFIG_EXPERIMENTO, CONFIG_V1, dato
 from simulador_maas.config import ErrorConfiguracion, cargar_configuracion
 
 
@@ -12,7 +13,16 @@ def test_configuracion_del_experimento_es_valida():
     config = cargar_configuracion(CONFIG_EXPERIMENTO)
     assert list(config.niveles) == ["bajo", "base", "alto"]
     assert config.rango_manual is None
-    assert config.ruta_catalogo.endswith("config/fdp_v1.toml")
+
+
+def test_la_copia_con_la_v1_coincide_con_la_configuracion_del_experimento():
+    """tests/datos/v1_config.toml es config/experimento.toml con el catálogo V1 (§12.1)."""
+    experimento, v1 = cargar_configuracion(CONFIG_EXPERIMENTO), cargar_configuracion(CONFIG_V1)
+    distintos = {"ruta", "texto", "catalogo_fdp", "ruta_catalogo"}
+    for campo in dataclasses.fields(experimento):
+        if campo.name not in distintos:
+            assert getattr(v1, campo.name) == getattr(experimento, campo.name), campo.name
+    assert v1.ruta_catalogo.endswith("config/fdp_v1.toml")
 
 
 def test_pr10d_sin_nivel_base_da_error():

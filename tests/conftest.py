@@ -11,6 +11,8 @@ RAIZ = Path(__file__).resolve().parent.parent
 DATOS = RAIZ / "tests" / "datos"
 CONFIG_EXPERIMENTO = str(RAIZ / "config" / "experimento.toml")
 CATALOGO_V1 = str(RAIZ / "config" / "fdp_v1.toml")
+# config/experimento.toml con el catálogo V1: PR-02, PR-03 y PR-08 (§12.1).
+CONFIG_V1 = str(DATOS / "v1_config.toml")
 
 
 def dato(nombre: str) -> str:

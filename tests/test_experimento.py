@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from conftest import CONFIG_EXPERIMENTO, dato
+from conftest import CONFIG_EXPERIMENTO, CONFIG_V1, dato
 from simulador_maas import __main__ as cli
 from simulador_maas import experimento
 from simulador_maas.experimento import ErrorExperimento, ejecutar_experimento, preparar
@@ -17,7 +17,7 @@ INICIO = datetime(2026, 10, 2, 15, 30).astimezone()
 
 
 def test_pr03a_numeros_aleatorios_comunes_entre_flotas():
-    prep = preparar(CONFIG_EXPERIMENTO)
+    prep = preparar(CONFIG_V1)
     media_ia = prep.ref.niveles["base"].media_ia
     resultados = []
     for nch in (4, 9, 17):

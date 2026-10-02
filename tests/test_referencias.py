@@ -2,14 +2,14 @@
 
 import math
 
-from conftest import CONFIG_EXPERIMENTO
+from conftest import CONFIG_V1
 from simulador_maas.aleatorios import cargar_catalogo
 from simulador_maas.config import cargar_configuracion
 from simulador_maas.referencias import calcular_referencias
 
 
 def test_pr08_valores_derivados_con_la_v1():
-    config = cargar_configuracion(CONFIG_EXPERIMENTO)
+    config = cargar_configuracion(CONFIG_V1)
     ref = calcular_referencias(config, cargar_catalogo(config.ruta_catalogo))
 
     assert math.isclose(ref.e_s, 20.0163854565, rel_tol=1e-9)
