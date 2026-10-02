@@ -74,11 +74,75 @@ Cada carpeta tiene su propio `README.md` con más detalle. La estructura complet
 
 ## Cómo se corre
 
-_Pendiente: se completa cuando exista el código en `src/`._
+Todos los comandos se corren desde la raíz del repositorio. El detalle de cada opción está en [`docs/sdd.md`](docs/sdd.md), sección 8.6.
+
+### Instalación (una sola vez)
+
+Hace falta Python 3.11 o posterior. Conviene un entorno virtual (`.venv/` ya está en `.gitignore`):
+
+```bash
+python -m venv .venv
+```
+
+Activarlo (`.venv\Scripts\activate` en Windows, `source .venv/bin/activate` en Linux o macOS) e instalar:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+Eso instala el paquete `simulador_maas` en modo editable (los cambios en `src/` se ven sin reinstalar), pytest y lo que usa el notebook. Para el simulador solo, alcanza con `pip install -e .` y `pip install pytest`.
+
+### Pruebas
+
+```bash
+pytest
+```
+
+### 1. Experimento: todas las corridas
+
+Recorre los niveles de demanda, las flotas y las réplicas de `config/experimento.toml`, y escribe `experimento.json` y `corridas.csv`. Con las FDP provisorias tarda menos de un minuto.
+
+```bash
+python -m simulador_maas experimento
+```
+
+Por defecto escribe en `results/pruebas/AAAAMMDD-HHMMSS/`, que no se sube. Para los resultados de la entrega, elegí una carpeta en `results/finales/`. Nunca se pisa una carpeta que ya existe:
+
+```bash
+python -m simulador_maas experimento --salida results/finales/v2
+```
+
+### 2. Análisis: el criterio, los escenarios y los gráficos
+
+Lee un experimento ya corrido y escribe las tablas, los avisos y los gráficos en una subcarpeta `analisis_X<x>_Y<y>/`. También muestra por pantalla los escenarios y la mejor flota de cada nivel.
+
+```bash
+python -m simulador_maas analisis --entrada results/pruebas/AAAAMMDD-HHMMSS
+```
+
+Para probar otro criterio no hace falta volver a simular: los umbrales X (espera, en minutos) e Y (abandono, en %) se cambian desde la línea de comandos.
+
+```bash
+python -m simulador_maas analisis --entrada results/pruebas/AAAAMMDD-HHMMSS --espera-max 12 --abandono-max 3
+```
+
+### 3. Corrida individual: para depurar o para la tabla de eventos
+
+Simula una sola corrida (flota, nivel y réplica) y muestra su resultado. Con `--eventos`, escribe además la tabla de eventos en un CSV.
+
+```bash
+python -m simulador_maas corrida --nch 9 --nivel alto --replica 3
+```
+
+La tabla de eventos calculada a mano del SDD (sección 12.3), que sirve para el documento de la entrega, se obtiene con:
+
+```bash
+python -m simulador_maas corrida --nch 2 --config tests/datos/pr01_config.toml --eventos results/pruebas/eventos_pr01.csv
+```
+
+### Pasar a las FDP definitivas (V2)
+
+Cuando esté `config/fdp_v2.toml` (SDD, sección 5.6), se cambia una línea de `config/experimento.toml`, `catalogo_fdp = "fdp_v2.toml"`, y se corre el experimento en `results/finales/`. No hay que tocar el código: el tiempo medio de servicio, las flotas de referencia y el rango de flotas se recalculan solos.
 
 ---
 
