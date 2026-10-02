@@ -1,0 +1,26 @@
+# PR-11: experimento reducido de punta a punta (SDD §12.2).
+# Catálogo V1, solo el nivel base, 2 réplicas y rango_manual de 8 a 10.
+# Las demás claves, como en config/experimento.toml.
+
+[modelo]
+velocidad_mph = 13
+umbral_tolerancia_min = 15
+horizonte_min = 1440
+
+[demanda]
+media_ia_base_min = 2.5
+niveles = { base = 1.0 }
+
+[experimento]
+replicas = 2
+semilla_base = 20261002
+catalogo_fdp = "../../config/fdp_v1.toml"
+rango_margen_inferior = 2
+rango_margen_superior = 6
+rango_manual = [8, 10]
+verificar_invariantes = true
+
+[analisis]
+espera_total_max_min = 10
+abandono_max_pct = 5
+nivel_confianza = 0.95
