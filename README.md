@@ -4,7 +4,7 @@ Trabajo Práctico Nº 5 de **Simulación** (UTN FRBA, Ingeniería en Sistemas de
 
 Simulación de eventos discretos (evento a evento) de una plataforma de movilidad tipo Lyft, para encontrar la **cantidad de choferes (NCH)** que mantiene una espera aceptable para los clientes sin disparar el tiempo ocioso de la flota.
 
-> **Estado:** diseño completo, en revisión. El modelo y la especificación técnica (SDD) están terminados para la primera iteración; el código se empieza cuando el equipo apruebe el SDD (Spec-Driven Development). La entrega se hace en dos iteraciones: ver "Segunda iteración", más abajo.
+> **Estado:** primera iteración implementada con las FDP provisorias (V1). El simulador, sus pruebas y el análisis funcionan: ver "Cómo se corre", más abajo. Falta correr el experimento de la entrega con las FDP definitivas, cuando llegue `config/fdp_v2.toml` (etapa 5 del SDD). El proyecto sigue Spec-Driven Development: el modelo manda, el SDD se deriva de él y el código implementa el SDD. La entrega se hace en dos iteraciones: ver "Segunda iteración", más abajo.
 
 ---
 
@@ -58,13 +58,14 @@ SimuladorMaaS/
 ├── data/                  ← datos (ver data/README.md)
 │   ├── raw/               ← dataset original de Kaggle (NO se sube, es muy pesado)
 │   └── processed/         ← versión limpia y reducida (se sube si es chica)
-├── config/                ← parámetros del experimento y catálogos de FDP (se crea al programar)
+├── config/                ← parámetros del experimento y catálogos de FDP (V1; la V2 cuando llegue)
 ├── src/                   ← código del simulador: el paquete simulador_maas
 ├── tests/                 ← pruebas automáticas del simulador
 ├── results/               ← salidas de las corridas
 │   ├── finales/           ← corridas que respaldan la entrega (se suben)
 │   └── pruebas/           ← corridas intermedias (NO se suben)
-├── requirements.txt       ← dependencias de Python
+├── pyproject.toml         ← declara el paquete simulador_maas y sus dependencias
+├── requirements.txt       ← instala el paquete, pytest y lo que usa el notebook
 └── .gitignore             ← qué no se sube al repositorio
 ```
 

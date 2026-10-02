@@ -1,8 +1,8 @@
 # src/
 
-Código del simulador: el paquete `simulador_maas`. **Vacío a propósito**: no se escribe código hasta que el equipo apruebe el SDD ([`docs/sdd.md`](../docs/sdd.md)).
+Código del simulador: el paquete `simulador_maas`, que implementa la primera iteración del SDD ([`docs/sdd.md`](../docs/sdd.md)). Cada módulo indica en su encabezado qué secciones del SDD implementa. Cómo se instala y se corre está en el [README principal](../README.md).
 
-Antes de programar, leé las reglas del SDD, sección 0.2. Entre otras cosas, lo de la segunda iteración no se implementa todavía.
+Antes de cambiar algo, leé las reglas del SDD, sección 0.2. Entre otras cosas, los cambios siguen el orden modelo → SDD → código, y lo de la segunda iteración no se programa hasta que el equipo decida empezarla y actualice el SDD (sección 1.4).
 
 | Qué | Dónde (en el SDD) |
 |---|---|
