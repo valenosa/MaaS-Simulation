@@ -14,7 +14,7 @@ niveles = { bajo = 0.7, base = 1.0, alto = 1.3 }   # factores que multiplican a 
 [experimento]
 replicas = 30                  # R: D-05
 semilla_base = 20261002        # modelo §9.2, D-09: no se cambia después de ver resultados
-catalogo_fdp = "fdp_v1.toml"   # relativa a la carpeta de este archivo (SDD §3.1)
+catalogo_fdp = "fdp_v2.toml"   # relativa a la carpeta de este archivo (SDD §3.1)
 rango_margen_inferior = 2      # modelo §9.5
 rango_margen_superior = 6      # modelo §9.5
 rango_manual = []              # opcional: [desde, hasta] reemplaza la regla del rango (modelo §10.5)
