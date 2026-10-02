@@ -1,0 +1,13 @@
+{
+  "analisis": {"espera_total_max_min": 10, "abandono_max_pct": 5, "nivel_confianza": 0.95},
+  "referencias": {
+    "e_tb": 0, "e_d": 0, "e_dem": 0, "e_tv": 0, "e_s": 0,
+    "niveles": {
+      "base": {"factor": 0, "lambda": 0, "media_ia": 0, "carga": 0}
+    },
+    "flota_actual": 3,
+    "flota_peor": 2,
+    "rango": [2, 5],
+    "flotas": [2, 3, 4, 5]
+  }
+}
